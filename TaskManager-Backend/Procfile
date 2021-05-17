@@ -1,0 +1,1 @@
+web: java -jar TaskManager-Backend/build/libs/TaskManager-Backend-0.0.1-SNAPSHOT.jar

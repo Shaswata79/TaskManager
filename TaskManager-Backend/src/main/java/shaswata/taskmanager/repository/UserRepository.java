@@ -12,7 +12,7 @@ public interface UserRepository extends JpaRepository<UserAccount, String> {
 
     UserAccount findUserAccountByEmail(String email);
 
-    //UserAccount findUserAccountByToken(String token);
+    UserAccount findUserAccountByToken(String token);
 
     List<UserAccount> findAll();
 

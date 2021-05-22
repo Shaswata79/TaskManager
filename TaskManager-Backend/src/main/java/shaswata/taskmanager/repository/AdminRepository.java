@@ -12,7 +12,7 @@ public interface AdminRepository extends JpaRepository<AdminAccount, String> {
 
     AdminAccount findAdminAccountByEmail(String email);
 
-    //AdminAccount findAdminAccountByToken(String token);
+    AdminAccount findAdminAccountByToken(String token);
 
     List<AdminAccount> findAll();
 

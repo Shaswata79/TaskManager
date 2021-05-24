@@ -6,6 +6,7 @@ import shaswata.taskmanager.dto.TaskDto;
 import shaswata.taskmanager.model.Project;
 import shaswata.taskmanager.model.Task;
 import shaswata.taskmanager.model.TaskStatus;
+import shaswata.taskmanager.model.UserAccount;
 import shaswata.taskmanager.repository.ProjectRepository;
 import shaswata.taskmanager.repository.TaskRepository;
 
@@ -24,6 +25,7 @@ public class TaskService {
 
     @Autowired
     TaskRepository taskRepo;
+
 
     @Transactional
     public TaskDto createTask(TaskDto taskDto) throws Exception {
@@ -110,6 +112,19 @@ public class TaskService {
 
 
     @Transactional
+    public List<TaskDto> getAllTasksByUser(UserAccount user){
+        List<Task> taskList = user.getTasks();
+        List<TaskDto> taskDtoList = new ArrayList<>();
+
+        for (Task task : taskList){
+            taskDtoList.add(taskToDTO(task));
+        }
+
+        return taskDtoList;
+    }
+
+
+    @Transactional
     public List<TaskDto> getTasksByProject(String name) throws Exception {
         if(name == null){
             throw new Exception("Project name cannot be empty!");
@@ -145,6 +160,25 @@ public class TaskService {
     }
 
 
+    @Transactional
+    public List<TaskDto> getTasksByStatus(UserAccount user, TaskStatus status) throws Exception {
+        if(status == null){
+            throw new Exception("Task status cannot be empty!");
+        }
+
+        List<Task> taskList = user.getTasks();
+        List<TaskDto> taskDtoList = new ArrayList<>();
+
+        for(Task task : taskList){
+            if(task.getStatus().equals(status)){
+                taskDtoList.add(taskToDTO(task));
+            }
+        }
+
+        return taskDtoList;
+    }
+
+
 
     @Transactional
     public List<TaskDto> getExpiredTasks(){
@@ -166,12 +200,34 @@ public class TaskService {
     }
 
 
+    @Transactional
+    public List<TaskDto> getExpiredTasks(UserAccount user){
+        long millis = System.currentTimeMillis();
+        Date currentDate = new Date(millis);
+
+        List<Task> taskList = user.getTasks();
+        List<TaskDto> expiredTasks = new ArrayList<>();
+
+        for(Task task : taskList){
+            if(task.getDueDate() != null){
+                if(task.getDueDate().before(currentDate)){
+                    expiredTasks.add(taskToDTO(task));
+                }
+            }
+        }
+
+        return expiredTasks;
+    }
+
+
+
     public static TaskDto taskToDTO(Task task){
         TaskDto taskDto = new TaskDto();
         taskDto.setDescription(task.getDescription());
         taskDto.setDueDate(task.getDueDate());
         taskDto.setStatus(task.getStatus());
         taskDto.setProjectName(task.getProject().getName());
+        taskDto.setId(task.getId());
         return taskDto;
     }
 }

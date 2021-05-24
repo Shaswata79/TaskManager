@@ -26,6 +26,9 @@ public class UserService {
     @Autowired
     TaskRepository taskRepo;
 
+    @Autowired
+    ProjectRepository projectRepo;
+
 
     @Transactional
     public UserDto createUser(UserDto dto) throws Exception {
@@ -102,6 +105,32 @@ public class UserService {
         }
         userRepo.save(user);
         return "User " + email + " assigned to task '" + task.getDescription() + "' in project '" + task.getProject().getName() + "'.";
+
+    }
+
+
+    @Transactional
+    public String assignUserToProject(String email, String projectName) throws Exception {
+        if(email == null){
+            throw new Exception("Email cannot be empty!");
+        }
+        if(projectName == null) {
+            throw new Exception("Project name cannot be empty!");
+        }
+
+        UserAccount user = userRepo.findUserAccountByEmail(email);
+        if(user == null){
+            throw new Exception("User account with email '" + email + "' not found.");
+        }
+        Project project = projectRepo.findProjectByName(projectName);
+        if(project == null){
+            throw new Exception("Project '" + projectName + "' not found.");
+        }
+
+        List<Project> userProjectList = user.getProjects();
+        userProjectList.add(project);
+        userRepo.save(user);
+        return "User " + email + " assigned to project '" + projectName + "'.";
 
     }
 

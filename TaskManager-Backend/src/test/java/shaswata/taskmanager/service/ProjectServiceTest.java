@@ -4,6 +4,7 @@ package shaswata.taskmanager.service;
 
 
 
+import jogamp.opengl.gl2.ProjectDouble;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -241,6 +242,37 @@ public class ProjectServiceTest {
             fail(e.getMessage());
         }
     }
+
+
+    @Test
+    public void testGetAllProjectsByUser(){
+        USER.setName(USER_NAME);
+        USER.setEmail(USER_EMAIL);
+        USER.setPassword(USER_PASSWORD);
+        List<Project> userProjectList = new ArrayList<>();
+
+        List<Task> taskList = new ArrayList<>();
+        TASK1.setProject(PROJECT1);
+        TASK1.setDescription(TASK1_DESCRIPTION);
+        TASK1.setStatus(TASK1_STATUS);
+        taskList.add(TASK1);
+        PROJECT1.setName(PROJECT1_NAME);
+        PROJECT1.setTasks(taskList);
+        userProjectList.add(PROJECT1);
+        USER.setProjects(userProjectList);
+
+        try {
+            List<ProjectDto> projectDtoList = service.getAllProjectsByUser(USER);
+            assertEquals(1, projectDtoList.size());
+            assertEquals(PROJECT1_NAME, projectDtoList.get(0).getName());
+        } catch (Exception e){
+            fail(e.getMessage());
+        }
+
+    }
+
+
+
 
 }
 

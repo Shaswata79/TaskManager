@@ -1,9 +1,11 @@
 package shaswata.taskmanager.service;
 
+import org.aspectj.bridge.IMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import shaswata.taskmanager.dto.ProjectDto;
 import shaswata.taskmanager.dto.TaskDto;
+import shaswata.taskmanager.model.Account;
 import shaswata.taskmanager.model.Project;
 import shaswata.taskmanager.model.Task;
 import shaswata.taskmanager.model.UserAccount;
@@ -78,6 +80,23 @@ public class ProjectService {
 
 
     @Transactional
+    public List<ProjectDto> getAllProjectsByUser(UserAccount user){
+        List<Project> projectList = user.getProjects();
+        List<ProjectDto> projectDtoList = new ArrayList<>();
+
+        if(projectDtoList == null){
+            return null;
+        }
+
+        for(Project project : projectList){
+            projectDtoList.add(projectToDTO(project));
+        }
+
+        return projectDtoList;
+    }
+
+
+    @Transactional
     public String deleteProject(String name) throws Exception {
         if(name == null){
             throw new Exception("Project name cannot be empty!");
@@ -95,6 +114,26 @@ public class ProjectService {
         }
         projectRepo.deleteProjectByName(name);
         return "Project '" + name + "' was deleted.";
+    }
+
+
+
+    @Transactional
+    public String deleteProjectByUser(String name, UserAccount user) throws Exception {
+        List<Project> userProjectList = user.getProjects();
+        Project project = projectRepo.findProjectByName(name);
+
+        if((project != null) && (userProjectList != null)){
+            if(userProjectList.contains(project)){
+                String message = deleteProject(name);
+                return message;
+            } else{
+                throw new Exception("User can only delete own projects");
+            }
+
+        } else {
+            throw new Exception("No such project found!");
+        }
     }
 
 

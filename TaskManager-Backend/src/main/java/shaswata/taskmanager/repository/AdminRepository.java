@@ -2,6 +2,7 @@ package shaswata.taskmanager.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+
 import org.springframework.stereotype.Repository;
 import shaswata.taskmanager.model.AdminAccount;
 
@@ -11,8 +12,6 @@ import java.util.List;
 public interface AdminRepository extends JpaRepository<AdminAccount, String> {
 
     AdminAccount findAdminAccountByEmail(String email);
-
-    AdminAccount findAdminAccountByToken(String token);
 
     List<AdminAccount> findAll();
 

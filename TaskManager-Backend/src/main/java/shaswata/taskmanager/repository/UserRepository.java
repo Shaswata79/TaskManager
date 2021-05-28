@@ -1,8 +1,7 @@
 package shaswata.taskmanager.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-import shaswata.taskmanager.model.AdminAccount;
+import org.springframework.stereotype.Repository;;
 import shaswata.taskmanager.model.UserAccount;
 
 import java.util.List;
@@ -11,8 +10,6 @@ import java.util.List;
 public interface UserRepository extends JpaRepository<UserAccount, String> {
 
     UserAccount findUserAccountByEmail(String email);
-
-    UserAccount findUserAccountByToken(String token);
 
     List<UserAccount> findAll();
 

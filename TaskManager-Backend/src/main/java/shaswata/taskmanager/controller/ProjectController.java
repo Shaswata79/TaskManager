@@ -1,13 +1,15 @@
 package shaswata.taskmanager.controller;
 
 
+import jdk.internal.vm.compiler.collections.EconomicMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import shaswata.taskmanager.dto.ProjectDto;
 import shaswata.taskmanager.model.UserAccount;
-import shaswata.taskmanager.service.AuthenticationService;
+import shaswata.taskmanager.repository.UserRepository;
 import shaswata.taskmanager.service.ProjectService;
 import shaswata.taskmanager.service.UserService;
 
@@ -17,57 +19,53 @@ import java.util.List;
 @CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
 @RestController
 @RequestMapping("/api/project")
-public class ProjectController {
+public class ProjectController extends BaseController{
 
     @Autowired
     ProjectService projectService;
 
-    @Autowired
-    AuthenticationService authenticationService;
 
     @Autowired
     UserService userService;
 
+    @Autowired
+    UserRepository userRepository;
+
 
 
     @PostMapping("/create")
-    public ResponseEntity<?> createProject(@RequestBody ProjectDto projectDto, @RequestHeader String token){
+    public ResponseEntity<?> createProject(@RequestBody ProjectDto projectDto) {
+
         try{
-            if (authenticationService.validateUserToken(token) != null) {
-                UserAccount user = authenticationService.validateUserToken(token);
-                projectDto = projectService.createProject(projectDto);
-                userService.assignUserToProject(user.getEmail(), projectDto.getName());  //assign the current user to project automatically
-                return new ResponseEntity<>(projectDto, HttpStatus.OK);
-
-            } else if(authenticationService.validateAdminToken(token) != null){
+            UserDetails userDetails = super.getCurrentUser();
+            if (userDetails != null && userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"))) {     //current user has role admin
                 projectDto = projectService.createProject(projectDto);
                 return new ResponseEntity<>(projectDto, HttpStatus.OK);
-
-            } else {
-                return new ResponseEntity<>("Must be logged in to create a project.", HttpStatus.BAD_REQUEST);
+            } else{
+                projectDto = projectService.createProject(projectDto);
+                userService.assignUserToProject(userDetails.getUsername(), projectDto.getName());  //assign the current user to project automatically
+                return new ResponseEntity<>(projectDto, HttpStatus.OK);
             }
 
         } catch(Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
+
     }
 
 
+
     @GetMapping("/all")
-    public ResponseEntity<?> getAllProjects(@RequestHeader String token){
+    public ResponseEntity<?> getAllProjects() {
         try{
-
-            if (authenticationService.validateUserToken(token) != null) {
-                UserAccount user = authenticationService.validateUserToken(token);
-                List<ProjectDto> projectDtoList = projectService.getAllProjectsByUser(user);
-                return new ResponseEntity<>(projectDtoList, HttpStatus.OK);
-
-            }else if(authenticationService.validateAdminToken(token) != null){
+            UserDetails userDetails = super.getCurrentUser();
+            if (userDetails != null && userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"))) {
                 List<ProjectDto> projectDtoList = projectService.getAllProjects();
                 return new ResponseEntity<>(projectDtoList, HttpStatus.OK);
-
             } else{
-                return new ResponseEntity<>("Must be logged in to view all projects.", HttpStatus.BAD_REQUEST);
+                UserAccount user = userRepository.findUserAccountByEmail(userDetails.getUsername());
+                List<ProjectDto> projectDtoList = projectService.getAllProjectsByUser(user);
+                return new ResponseEntity<>(projectDtoList, HttpStatus.OK);
             }
 
         } catch(Exception e){
@@ -78,21 +76,18 @@ public class ProjectController {
 
 
     @DeleteMapping("/delete/{name}")
-    public ResponseEntity<?> deleteProject(@PathVariable("name") String projectName, @RequestHeader String token) {
+    public ResponseEntity<?> deleteProject(@PathVariable("name") String projectName) {
         try {
-
-            if (authenticationService.validateAdminToken(token) != null) {
+            UserDetails userDetails = super.getCurrentUser();
+            if (userDetails != null && userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"))) {
                 String message = projectService.deleteProject(projectName);
                 return new ResponseEntity<>(message, HttpStatus.OK);
-
-            } else if(authenticationService.validateUserToken(token) != null){
-                UserAccount user = authenticationService.validateUserToken(token);
-                String message = projectService.deleteProjectByUser(projectName, user);
-                return new ResponseEntity<>(message, HttpStatus.OK);
-
             } else{
-                return new ResponseEntity<>("Must be logged in to view all projects.", HttpStatus.BAD_REQUEST);
+                UserAccount user = userRepository.findUserAccountByEmail(userDetails.getUsername());
+                String message = projectService.deleteProject(projectName, user);
+                return new ResponseEntity<>(message, HttpStatus.OK);
             }
+
 
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -102,11 +97,7 @@ public class ProjectController {
 
 
 
-
-
-
-
-
-
-
 }
+
+
+

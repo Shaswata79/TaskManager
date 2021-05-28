@@ -8,7 +8,6 @@ import shaswata.taskmanager.dto.UserDto;
 import shaswata.taskmanager.model.Project;
 import shaswata.taskmanager.model.Task;
 import shaswata.taskmanager.model.UserAccount;
-import shaswata.taskmanager.repository.AdminRepository;
 import shaswata.taskmanager.repository.ProjectRepository;
 import shaswata.taskmanager.repository.TaskRepository;
 import shaswata.taskmanager.repository.UserRepository;
@@ -59,6 +58,7 @@ public class UserService {
     }
 
 
+
     @Transactional
     public UserDto changePassword(String email, String newPassword) throws Exception {
         if(email == null || newPassword == null){
@@ -75,6 +75,8 @@ public class UserService {
         return userToDTO(user);
 
     }
+
+
 
 
     @Transactional
@@ -213,7 +215,6 @@ public class UserService {
         dto.setEmail(user.getEmail());
         dto.setName(user.getName());
         dto.setPassword(user.getPassword());
-        dto.setToken(user.getToken());
         return dto;
     }
 

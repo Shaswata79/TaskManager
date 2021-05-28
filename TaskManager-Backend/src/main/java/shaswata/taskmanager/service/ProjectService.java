@@ -1,11 +1,9 @@
 package shaswata.taskmanager.service;
 
-import org.aspectj.bridge.IMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import shaswata.taskmanager.dto.ProjectDto;
 import shaswata.taskmanager.dto.TaskDto;
-import shaswata.taskmanager.model.Account;
 import shaswata.taskmanager.model.Project;
 import shaswata.taskmanager.model.Task;
 import shaswata.taskmanager.model.UserAccount;
@@ -119,7 +117,7 @@ public class ProjectService {
 
 
     @Transactional
-    public String deleteProjectByUser(String name, UserAccount user) throws Exception {
+    public String deleteProject(String name, UserAccount user) throws Exception {
         List<Project> userProjectList = user.getProjects();
         Project project = projectRepo.findProjectByName(name);
 
@@ -149,6 +147,18 @@ public class ProjectService {
         projectDto.setTasks(taskDtoList);
 
         return projectDto;
+    }
+
+
+    public boolean validUserOfProject(UserAccount user, String projectName){
+        List<Project> userProjectList = user.getProjects();
+        Project project = projectRepo.findProjectByName(projectName);
+        if(project != null && userProjectList != null){
+            if(userProjectList.contains(project)){
+                return true;
+            }
+        }
+        return false;
     }
 
 

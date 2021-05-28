@@ -112,7 +112,7 @@ public class TaskService {
 
 
     @Transactional
-    public List<TaskDto> getAllTasksByUser(UserAccount user){
+    public List<TaskDto> getAllTasks(UserAccount user){
         List<Task> taskList = user.getTasks();
         List<TaskDto> taskDtoList = new ArrayList<>();
 
@@ -219,7 +219,16 @@ public class TaskService {
         return expiredTasks;
     }
 
-
+    public boolean validUserOfTask(UserAccount user, Long id){
+        List<Task> userTaskList = user.getTasks();
+        Task task = taskRepo.findTaskById(id);
+        if(task != null && userTaskList != null){
+            if(userTaskList.contains(task)){
+                return true;
+            }
+        }
+        return false;
+    }
 
     public static TaskDto taskToDTO(Task task){
         TaskDto taskDto = new TaskDto();

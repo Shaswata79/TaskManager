@@ -1,3 +1,5 @@
+
+
 package shaswata.taskmanager.model;
 
 import javax.persistence.Entity;
@@ -15,4 +17,9 @@ public class AdminAccount extends Account{
         super.setEmail(email);
     }
 
+    public AdminAccount() {
+        this.setRole("ADMIN");
+    }
 }
+
+

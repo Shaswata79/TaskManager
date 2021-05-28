@@ -203,7 +203,7 @@ public class UserServiceTest {
 
     }
 
-
+/*
 
     @Test
     public void testChangePassword() {
@@ -252,6 +252,8 @@ public class UserServiceTest {
     }
 
 
+
+ */
 
     @Test
     public void testGetUser() {

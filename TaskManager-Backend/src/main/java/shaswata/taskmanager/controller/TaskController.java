@@ -4,8 +4,8 @@ package shaswata.taskmanager.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import shaswata.taskmanager.dto.ProjectDto;
 import shaswata.taskmanager.dto.TaskDto;
 import shaswata.taskmanager.model.Project;
 import shaswata.taskmanager.model.Task;
@@ -13,7 +13,7 @@ import shaswata.taskmanager.model.TaskStatus;
 import shaswata.taskmanager.model.UserAccount;
 import shaswata.taskmanager.repository.ProjectRepository;
 import shaswata.taskmanager.repository.TaskRepository;
-import shaswata.taskmanager.service.AuthenticationService;
+import shaswata.taskmanager.repository.UserRepository;
 import shaswata.taskmanager.service.ProjectService;
 import shaswata.taskmanager.service.TaskService;
 
@@ -21,8 +21,8 @@ import java.util.List;
 
 @CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
 @RestController
-@RequestMapping("/api/task")
-public class TaskController {
+@RequestMapping("api/task")
+public class TaskController extends BaseController{
 
     @Autowired
     TaskService taskService;
@@ -31,34 +31,33 @@ public class TaskController {
     ProjectService projectService;
 
     @Autowired
-    AuthenticationService authenticationService;
-
-    @Autowired
     ProjectRepository projectRepo;
 
     @Autowired
     TaskRepository taskRepo;
 
+    @Autowired
+    UserRepository userRepo;
+
 
 
     @PostMapping("/create")
-    public ResponseEntity<?> createTask(@RequestBody TaskDto taskDto, @RequestHeader String token){
+    public ResponseEntity<?> createTask(@RequestBody TaskDto taskDto){
 
         try{
-            if (authenticationService.validateUserToken(token) != null) {
-                UserAccount user = authenticationService.validateUserToken(token);
-                if(validUserOfProject(user, taskDto.getProjectName())){
+            UserDetails userDetails = super.getCurrentUser();
+            if (userDetails != null && userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"))) {
+                taskDto = taskService.createTask(taskDto);
+                return new ResponseEntity<>(taskDto, HttpStatus.OK);
+
+            } else {
+                UserAccount user = userRepo.findUserAccountByEmail(userDetails.getUsername());
+                if(projectService.validUserOfProject(user, taskDto.getProjectName())){
                     taskDto = taskService.createTask(taskDto);
                     return new ResponseEntity<>(taskDto, HttpStatus.OK);
                 }else {
                     return new ResponseEntity<>("User can only add tasks to own projects!", HttpStatus.BAD_REQUEST);
                 }
-
-            }else if(authenticationService.validateAdminToken(token) != null){
-                taskDto = taskService.createTask(taskDto);
-                return new ResponseEntity<>(taskDto, HttpStatus.OK);
-            } else{
-                return new ResponseEntity<>("Must be logged in to create a task.", HttpStatus.BAD_REQUEST);
             }
 
         } catch(Exception e){
@@ -69,24 +68,21 @@ public class TaskController {
 
 
     @PutMapping("/edit/{id}")
-    public ResponseEntity<?> editTask(@PathVariable("id") Long id, @RequestBody TaskDto taskDto, @RequestHeader String token){
+    public ResponseEntity<?> editTask(@PathVariable("id") Long id, @RequestBody TaskDto taskDto){
 
         try{
-            if (authenticationService.validateUserToken(token) != null) {
-                UserAccount user = authenticationService.validateUserToken(token);
-                if(validUserOfTask(user, id)){
+            UserDetails userDetails = super.getCurrentUser();
+            if (userDetails != null && userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"))) {
+                taskDto = taskService.editTask(id, taskDto);
+                return new ResponseEntity<>(taskDto, HttpStatus.OK);
+            } else{
+                UserAccount user = userRepo.findUserAccountByEmail(userDetails.getUsername());
+                if(taskService.validUserOfTask(user, id)){
                     taskDto = taskService.editTask(id, taskDto);
                     return new ResponseEntity<>(taskDto, HttpStatus.OK);
                 }else {
                     return new ResponseEntity<>("User can only edit own tasks!", HttpStatus.BAD_REQUEST);
                 }
-
-            }else if(authenticationService.validateAdminToken(token) != null){
-                taskDto = taskService.editTask(id, taskDto);
-                return new ResponseEntity<>(taskDto, HttpStatus.OK);
-
-            } else{
-                return new ResponseEntity<>("Must be logged in to edit a task.", HttpStatus.BAD_REQUEST);
             }
 
         } catch(Exception e){
@@ -97,24 +93,22 @@ public class TaskController {
 
 
     @GetMapping("/get/{id}")
-    public ResponseEntity<?> getTask(@PathVariable("id") Long id, @RequestHeader String token){
+    public ResponseEntity<?> getTask(@PathVariable("id") Long id){
 
         try{
-            if (authenticationService.validateUserToken(token) != null) {
-                UserAccount user = authenticationService.validateUserToken(token);
-                if(validUserOfTask(user, id)){
+            UserDetails userDetails = super.getCurrentUser();
+            if (userDetails != null && userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"))) {
+                TaskDto taskDto = taskService.getTask(id);
+                return new ResponseEntity<>(taskDto, HttpStatus.OK);
+
+            } else{
+                UserAccount user = userRepo.findUserAccountByEmail(userDetails.getUsername());
+                if(taskService.validUserOfTask(user, id)){
                     TaskDto taskDto = taskService.getTask(id);
                     return new ResponseEntity<>(taskDto, HttpStatus.OK);
                 }else {
                     return new ResponseEntity<>("User can only view own tasks!", HttpStatus.BAD_REQUEST);
                 }
-
-            }else if(authenticationService.validateAdminToken(token) != null){
-                TaskDto taskDto = taskService.getTask(id);
-                return new ResponseEntity<>(taskDto, HttpStatus.OK);
-
-            } else{
-                return new ResponseEntity<>("Must be logged in to view a task.", HttpStatus.BAD_REQUEST);
             }
 
         } catch(Exception e){
@@ -125,48 +119,45 @@ public class TaskController {
 
 
     @GetMapping("/all")
-    public ResponseEntity<?> getAllTasks(@RequestHeader String token){
+    public ResponseEntity<?> getAllTasks(){
 
         try{
-            if (authenticationService.validateUserToken(token) != null) {
-                UserAccount user = authenticationService.validateUserToken(token);
-                List<TaskDto> taskList = taskService.getAllTasksByUser(user);
-                return new ResponseEntity<>(taskList, HttpStatus.OK);
-
-            }else if(authenticationService.validateAdminToken(token) != null){
+            UserDetails userDetails = super.getCurrentUser();
+            if (userDetails != null && userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"))) {
                 List<TaskDto> taskList = taskService.getAllTasks();
                 return new ResponseEntity<>(taskList, HttpStatus.OK);
 
             } else{
-                return new ResponseEntity<>("Must be logged in view all tasks.", HttpStatus.BAD_REQUEST);
+                UserAccount user = userRepo.findUserAccountByEmail(userDetails.getUsername());
+                List<TaskDto> taskList = taskService.getAllTasks(user);
+                return new ResponseEntity<>(taskList, HttpStatus.OK);
             }
 
         } catch(Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
+
     }
 
 
 
     @GetMapping("/all_by_project")
-    public ResponseEntity<?> getAllTasksByProject(@RequestParam String projectName, @RequestHeader String token){
+    public ResponseEntity<?> getAllTasksByProject(@RequestParam String projectName){
 
         try{
-            if (authenticationService.validateUserToken(token) != null) {
-                UserAccount user = authenticationService.validateUserToken(token);
-                if(validUserOfProject(user, projectName)){
+            UserDetails userDetails = super.getCurrentUser();
+            if (userDetails != null && userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"))) {
+                List<TaskDto> taskDtoList = taskService.getTasksByProject(projectName);
+                return new ResponseEntity<>(taskDtoList, HttpStatus.OK);
+
+            } else {
+                UserAccount user = userRepo.findUserAccountByEmail(userDetails.getUsername());
+                if(projectService.validUserOfProject(user, projectName)){
                     List<TaskDto> taskDtoList = taskService.getTasksByProject(projectName);
                     return new ResponseEntity<>(taskDtoList, HttpStatus.OK);
                 } else{
                     return new ResponseEntity<>("User can only access own projects!", HttpStatus.BAD_REQUEST);
                 }
-
-            }else if(authenticationService.validateAdminToken(token) != null){
-                List<TaskDto> taskDtoList = taskService.getTasksByProject(projectName);
-                return new ResponseEntity<>(taskDtoList, HttpStatus.OK);
-
-            } else{
-                return new ResponseEntity<>("Must be logged in view all tasks of a project.", HttpStatus.BAD_REQUEST);
             }
 
         } catch(Exception e){
@@ -178,20 +169,18 @@ public class TaskController {
 
 
     @GetMapping("/all_expired_tasks")
-    public ResponseEntity<?> getAllExpiredTasks(@RequestHeader String token){
+    public ResponseEntity<?> getAllExpiredTasks(){
 
         try{
-            if (authenticationService.validateUserToken(token) != null) {
-                UserAccount user = authenticationService.validateUserToken(token);
-                List<TaskDto> taskList = taskService.getExpiredTasks(user);
-                return new ResponseEntity<>(taskList, HttpStatus.OK);
-
-            }else if(authenticationService.validateAdminToken(token) != null){
+            UserDetails userDetails = super.getCurrentUser();
+            if (userDetails != null && userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"))) {
                 List<TaskDto> taskList = taskService.getExpiredTasks();
                 return new ResponseEntity<>(taskList, HttpStatus.OK);
 
             } else{
-                return new ResponseEntity<>("Must be logged in view tasks.", HttpStatus.BAD_REQUEST);
+                UserAccount user = userRepo.findUserAccountByEmail(userDetails.getUsername());
+                List<TaskDto> taskList = taskService.getExpiredTasks(user);
+                return new ResponseEntity<>(taskList, HttpStatus.OK);
             }
 
         } catch(Exception e){
@@ -203,7 +192,7 @@ public class TaskController {
 
 
     @GetMapping("/all_by_status")
-    public ResponseEntity<?> getAllTasksByStatus(@RequestParam String status, @RequestHeader String token){
+    public ResponseEntity<?> getAllTasksByStatus(@RequestParam String status){
         TaskStatus taskStatus;
         switch (status){
             case "open":
@@ -220,17 +209,15 @@ public class TaskController {
         }
 
         try{
-            if (authenticationService.validateUserToken(token) != null) {
-                UserAccount user = authenticationService.validateUserToken(token);
-                List<TaskDto> taskList = taskService.getTasksByStatus(user, taskStatus);
-                return new ResponseEntity<>(taskList, HttpStatus.OK);
-
-            }else if(authenticationService.validateAdminToken(token) != null){
+            UserDetails userDetails = super.getCurrentUser();
+            if (userDetails != null && userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"))) {
                 List<TaskDto> taskList = taskService.getTasksByStatus(taskStatus);
                 return new ResponseEntity<>(taskList, HttpStatus.OK);
 
-            } else{
-                return new ResponseEntity<>("Must be logged in view tasks.", HttpStatus.BAD_REQUEST);
+            }else{
+                UserAccount user = userRepo.findUserAccountByEmail(userDetails.getUsername());
+                List<TaskDto> taskList = taskService.getTasksByStatus(user, taskStatus);
+                return new ResponseEntity<>(taskList, HttpStatus.OK);
             }
 
         } catch(Exception e){
@@ -240,31 +227,6 @@ public class TaskController {
     }
 
 
-
-
-
-
-    private boolean validUserOfProject(UserAccount user, String projectName){
-        List<Project> userProjectList = user.getProjects();
-        Project project = projectRepo.findProjectByName(projectName);
-        if(project != null && userProjectList != null){
-            if(userProjectList.contains(project)){
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-    private boolean validUserOfTask(UserAccount user, Long id){
-        List<Task> userTaskList = user.getTasks();
-        Task task = taskRepo.findTaskById(id);
-        if(task != null && userTaskList != null){
-            if(userTaskList.contains(task)){
-                return true;
-            }
-        }
-        return false;
-    }
-
 }
+
+

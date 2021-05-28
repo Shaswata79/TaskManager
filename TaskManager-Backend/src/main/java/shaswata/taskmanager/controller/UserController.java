@@ -4,6 +4,7 @@ package shaswata.taskmanager.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import shaswata.taskmanager.dto.TaskDto;
 import shaswata.taskmanager.dto.UserDto;
@@ -13,7 +14,8 @@ import shaswata.taskmanager.model.UserAccount;
 import shaswata.taskmanager.repository.ProjectRepository;
 import shaswata.taskmanager.repository.TaskRepository;
 import shaswata.taskmanager.repository.UserRepository;
-import shaswata.taskmanager.service.AuthenticationService;
+//import shaswata.taskmanager.service.AuthenticationService;
+import shaswata.taskmanager.service.ProjectService;
 import shaswata.taskmanager.service.TaskService;
 import shaswata.taskmanager.service.UserService;
 
@@ -22,20 +24,38 @@ import java.util.List;
 
 @CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
 @RestController
-@RequestMapping("/api/user")
-public class UserController {
+@RequestMapping("api/user")
+public class UserController extends BaseController{
 
     @Autowired
     UserService userService;
 
     @Autowired
-    AuthenticationService authenticationService;
+    ProjectService projectService;
+
+    //TODO Remove all autowired repositories
 
     @Autowired
     ProjectRepository projectRepo;
 
     @Autowired
     TaskRepository taskRepo;
+
+    @Autowired
+    UserRepository userRepo;
+
+
+    @GetMapping("/hello")
+    public ResponseEntity<?> hello(){
+        try{
+            return new ResponseEntity<>("Hello World", HttpStatus.OK);
+        } catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+
+    }
+
+
 
 
     @PostMapping("/register")
@@ -49,17 +69,14 @@ public class UserController {
     }
 
 
-    @PutMapping("/change_password")
-    public ResponseEntity<?> changePassword(@RequestParam("newPassword") String newPassword, @RequestHeader String token){
-        try{
-            UserAccount user = authenticationService.validateUserToken(token);
-            if(user != null){
-                UserDto userDto = userService.changePassword(user.getEmail(), newPassword);
-                return new ResponseEntity<>(userDto, HttpStatus.OK);
 
-            } else {
-                return new ResponseEntity<>("Must be logged in to change password", HttpStatus.BAD_REQUEST);
-            }
+
+    @PutMapping("/change_password")
+    public ResponseEntity<?> changePassword(@RequestParam("newPassword") String newPassword){
+        try{
+            UserDetails userDetails = super.getCurrentUser();
+            UserDto userDto = userService.changePassword(userDetails.getUsername(), newPassword);
+            return new ResponseEntity<>(userDto, HttpStatus.OK);
 
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -67,17 +84,22 @@ public class UserController {
     }
 
 
+
+
+
+
     @PostMapping("/assign_to_project")
-    public ResponseEntity<?> assignUserToProject(@RequestParam("email") String email, @RequestParam("projectName") String projectName, @RequestHeader String token){
+    public ResponseEntity<?> assignUserToProject(@RequestParam("username") String email, @RequestParam("projectName") String projectName){
         try{
-            UserAccount user = authenticationService.validateUserToken(token);
-            if(authenticationService.validateAdminToken(token) != null || ((user != null) && (validUserOfProject(user, projectName)))){
+            UserDetails userDetails = super.getCurrentUser();
+            UserAccount user = userRepo.findUserAccountByEmail(userDetails.getUsername());
+            if (userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN")) || projectService.validUserOfProject(user, projectName)) {
                 //either the current user is the admin or the current user is a valid user of the project
                 String message = userService.assignUserToProject(email, projectName);
                 return new ResponseEntity<>(message, HttpStatus.OK);
 
-            } else {
-                return new ResponseEntity<>("Must be logged in as a valid user of the project!", HttpStatus.BAD_REQUEST);
+            } else{
+                return new ResponseEntity<>("Must be a valid user of the project", HttpStatus.OK);
             }
 
         } catch (Exception e){
@@ -87,17 +109,17 @@ public class UserController {
 
 
     @PostMapping("/assign_to_task")
-    public ResponseEntity<?> assignUserToProject(@RequestParam("email") String email, @RequestParam("taskID") Long id, @RequestHeader String token){
+    public ResponseEntity<?> assignUserToProject(@RequestParam("username") String email, @RequestParam("taskID") Long id){
         try{
-            UserAccount user = authenticationService.validateUserToken(token);
+            UserDetails userDetails = super.getCurrentUser();
+            UserAccount user = userRepo.findUserAccountByEmail(userDetails.getUsername());
             Task task = taskRepo.findTaskById(id);
-            if(authenticationService.validateAdminToken(token) != null || ((user != null) && (validUserOfProject(user, task.getProject().getName())))){
-                //either the current user is the admin or the current user is a valid user of the project
+            if (userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN")) || projectService.validUserOfProject(user, task.getProject().getName())) {
                 String message = userService.assignUserToTask(email, id);
                 return new ResponseEntity<>(message, HttpStatus.OK);
-
-            } else {
-                return new ResponseEntity<>("Must be logged in as a valid user of the project!", HttpStatus.BAD_REQUEST);
+            }
+            else {
+                return new ResponseEntity<>("Must be a valid user of the project!", HttpStatus.BAD_REQUEST);
             }
 
         } catch (Exception e){
@@ -107,9 +129,10 @@ public class UserController {
 
 
     @GetMapping("/all")
-    public ResponseEntity<?> getAllUsers(@RequestHeader String token){
+    public ResponseEntity<?> getAllUsers(){
         try{
-            if(authenticationService.validateAdminToken(token) != null){
+            UserDetails userDetails = super.getCurrentUser();
+            if (userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"))) {
                 List<UserDto> userList = userService.getAllUsers();
                 return new ResponseEntity<>(userList, HttpStatus.OK);
 
@@ -125,10 +148,10 @@ public class UserController {
 
 
     @GetMapping("/get")
-    public ResponseEntity<?> getUser(@PathVariable("email") String email, @RequestHeader String token){
+    public ResponseEntity<?> getUser(@PathVariable("username") String email){
         try{
-            UserAccount user = authenticationService.validateUserToken(token);
-            if((authenticationService.validateAdminToken(token) != null) || ((user != null) && (user.getEmail() == email))){
+            UserDetails userDetails = super.getCurrentUser();
+            if(userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN")) || ((userDetails != null) && (userDetails.getUsername() == email))){
                 //either the current user is the admin or the current user is trying to view own account details
                 UserDto userDto = userService.getUser(email);
                 return new ResponseEntity<>(userDto, HttpStatus.OK);
@@ -143,16 +166,11 @@ public class UserController {
     }
 
 
-    private boolean validUserOfProject(UserAccount user, String projectName){
-        List<Project> userProjectList = user.getProjects();
-        Project project = projectRepo.findProjectByName(projectName);
-        if(project != null && userProjectList != null){
-            if(userProjectList.contains(project)){
-                return true;
-            }
-        }
-        return false;
-    }
+
+
+
+
 
 
 }
+

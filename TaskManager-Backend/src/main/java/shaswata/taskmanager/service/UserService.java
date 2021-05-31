@@ -1,13 +1,21 @@
 package shaswata.taskmanager.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import shaswata.taskmanager.dto.ProjectDto;
 import shaswata.taskmanager.dto.TaskDto;
 import shaswata.taskmanager.dto.UserDto;
+import shaswata.taskmanager.exception.DuplicateEntityException;
+import shaswata.taskmanager.exception.InvalidInputException;
+import shaswata.taskmanager.exception.ResourceNotFoundException;
 import shaswata.taskmanager.model.Project;
 import shaswata.taskmanager.model.Task;
 import shaswata.taskmanager.model.UserAccount;
+import shaswata.taskmanager.repository.AdminRepository;
 import shaswata.taskmanager.repository.ProjectRepository;
 import shaswata.taskmanager.repository.TaskRepository;
 import shaswata.taskmanager.repository.UserRepository;
@@ -28,18 +36,81 @@ public class UserService {
     @Autowired
     ProjectRepository projectRepo;
 
+    @Autowired
+    AdminRepository adminRepo;
+
+    @Autowired
+    ProjectService projectService;
+
+
+    /////////////////////////////////////////METHODS CALLED BY CONTROLLER/////////////////////////////////////////////
+
+    @Transactional
+    public String assignToProjectService(String email, String projectName, UserDetails currentUser) throws Exception {
+        String message;
+        if(adminRepo.findAdminAccountByEmail(currentUser.getUsername()) != null){
+            message = this.assignUserToProject(email, projectName);
+        } else {
+            if(projectService.validUserOfProject(currentUser.getUsername(), projectName)){
+                message = this.assignUserToProject(email, projectName);
+            }else {
+                throw new AccessDeniedException("User can only access own projects!");
+            }
+        }
+        return message;
+    }
+
+
+    @Transactional
+    public String assignToTaskService(String email, Long id, UserDetails currentUser) throws Exception {
+        String message;
+        if(adminRepo.findAdminAccountByEmail(currentUser.getUsername()) != null){
+            message = this.assignUserToTask(email, id);
+        } else {
+            if(projectService.validUserOfProject(currentUser.getUsername(), id)){
+                message = this.assignUserToTask(email, id);
+            }else {
+                throw new AccessDeniedException("User can only access own projects!");
+            }
+        }
+        return message;
+    }
+
+
+
+    @Transactional
+    public UserDto getUserService(String email, UserDetails currentUser) throws Exception {
+        UserDto userDto;
+        if(adminRepo.findAdminAccountByEmail(currentUser.getUsername()) != null){
+            userDto = this.getUser(email);
+
+        } else {
+            if(currentUser.getUsername().equals(email)){
+                userDto = this.getUser(email);
+            } else{
+                throw new AccessDeniedException("You can only view your own account details!");
+            }
+
+        }
+        return userDto;
+    }
+
+
+
+
+    ////////////////////////////////////////////////ACTUAL SERVICES//////////////////////////////////////////////////
 
     @Transactional
     public UserDto createUser(UserDto dto) throws Exception {
-        if(dto.getName() == null){
-            throw new Exception("Name cannot be empty!");
+        if(dto.getName() == null || dto.getName() == ""){
+            throw new InvalidInputException("Name cannot be empty!");
         }
-        if(dto.getEmail() == null || dto.getPassword() == null){
-            throw new Exception("Email or password cannot be empty!");
+        if(dto.getEmail() == null || dto.getEmail() == "" || dto.getPassword() == null || dto.getPassword() == ""){
+            throw new InvalidInputException("Email or password cannot be empty!");
         }
 
         if(userRepo.findUserAccountByEmail(dto.getEmail()) != null){
-            throw new Exception("Account with email '" + dto.getEmail() + "' already exists.");
+            throw new DuplicateEntityException("Account with email '" + dto.getEmail() + "' already exists.");
         }
 
         UserAccount user = new UserAccount();
@@ -61,8 +132,8 @@ public class UserService {
 
     @Transactional
     public UserDto changePassword(String email, String newPassword) throws Exception {
-        if(email == null || newPassword == null){
-            throw new Exception("Email or new password cannot be empty!");
+        if(email == null || email == "" || newPassword == null || newPassword == ""){
+            throw new InvalidInputException("Email or new password cannot be empty!");
         }
 
         UserAccount user = userRepo.findUserAccountByEmail(email);
@@ -81,11 +152,11 @@ public class UserService {
 
     @Transactional
     public String assignUserToTask(String email, Long id) throws Exception {
-        if(email == null){
-            throw new Exception("Email cannot be empty!");
+        if(email == null || email == ""){
+            throw new InvalidInputException("Email cannot be empty!");
         }
         if(id == null) {
-            throw new Exception("Task ID cannot be empty!");
+            throw new InvalidInputException("Task ID cannot be empty!");
         }
 
         UserAccount user = userRepo.findUserAccountByEmail(email);
@@ -94,7 +165,7 @@ public class UserService {
         }
         Task task = taskRepo.findTaskById(id);
         if(task == null){
-            throw new Exception("Task with ID:" + id + "' not found.");
+            throw new ResourceNotFoundException("Task with ID:" + id + "' not found.");
         }
 
         List<Task> userTaskList = user.getTasks();
@@ -113,11 +184,11 @@ public class UserService {
 
     @Transactional
     public String assignUserToProject(String email, String projectName) throws Exception {
-        if(email == null){
-            throw new Exception("Email cannot be empty!");
+        if(email == null || email == ""){
+            throw new InvalidInputException("Email cannot be empty!");
         }
-        if(projectName == null) {
-            throw new Exception("Project name cannot be empty!");
+        if(projectName == null || projectName == "") {
+            throw new InvalidInputException("Project name cannot be empty!");
         }
 
         UserAccount user = userRepo.findUserAccountByEmail(email);
@@ -126,7 +197,7 @@ public class UserService {
         }
         Project project = projectRepo.findProjectByName(projectName);
         if(project == null){
-            throw new Exception("Project '" + projectName + "' not found.");
+            throw new ResourceNotFoundException("Project '" + projectName + "' not found.");
         }
 
         List<Project> userProjectList = user.getProjects();
@@ -154,8 +225,8 @@ public class UserService {
 
     @Transactional
     public List<TaskDto> getTasksByUser(String email) throws Exception {
-        if(email == null){
-            throw new Exception("User email cannot be empty!");
+        if(email == null || email == ""){
+            throw new InvalidInputException("User email cannot be empty!");
         }
         UserAccount user = userRepo.findUserAccountByEmail(email);
         if(user == null){
@@ -177,8 +248,8 @@ public class UserService {
 
     @Transactional
     public List<ProjectDto> getProjectsByUser(String email) throws Exception {
-        if(email == null){
-            throw new Exception("User email cannot be empty!");
+        if(email == null || email == ""){
+            throw new InvalidInputException("User email cannot be empty!");
         }
         UserAccount user = userRepo.findUserAccountByEmail(email);
         if(user == null){
@@ -198,8 +269,8 @@ public class UserService {
 
     @Transactional
     public UserDto getUser(String email) throws Exception {
-        if(email == null){
-            throw new Exception("User email cannot be empty!");
+        if(email == null || email == ""){
+            throw new InvalidInputException("User email cannot be empty!");
         }
         UserAccount user = userRepo.findUserAccountByEmail(email);
         if(user == null){

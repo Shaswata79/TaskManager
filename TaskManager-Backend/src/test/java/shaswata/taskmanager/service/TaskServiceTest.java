@@ -461,7 +461,7 @@ public class TaskServiceTest {
     @Test
     public void testGetTaskByOpenStatus(){
         try{
-            List<TaskDto> dtos = service.getTasksByStatus(TaskStatus.open);
+            List<TaskDto> dtos = service.getTasksByStatus("open");
             assertEquals(2, dtos.size());
             assertEquals(TASK1_DESCRIPTION, dtos.get(0).getDescription());
             assertEquals(TASK1_STATUS, dtos.get(0).getStatus());
@@ -475,7 +475,7 @@ public class TaskServiceTest {
     @Test
     public void testGetTaskByClosedStatus(){
         try{
-            List<TaskDto> dtos = service.getTasksByStatus(TaskStatus.closed);
+            List<TaskDto> dtos = service.getTasksByStatus("closed");
             assertEquals(1, dtos.size());
             assertEquals(TASK3_DESCRIPTION, dtos.get(0).getDescription());
             assertEquals(TASK3_STATUS, dtos.get(0).getStatus());

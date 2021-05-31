@@ -7,13 +7,13 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import shaswata.taskmanager.model.AdminAccount;
-import shaswata.taskmanager.model.MyUserDetails;
 import shaswata.taskmanager.model.UserAccount;
 import shaswata.taskmanager.repository.AdminRepository;
 import shaswata.taskmanager.repository.UserRepository;
+import shaswata.taskmanager.security.ApplicationUserRole;
 import shaswata.taskmanager.security.JwtUtil;
 
-import java.util.ArrayList;
+
 
 
 @Service
@@ -36,9 +36,21 @@ public class MyUserDetailsService implements UserDetailsService {
         AdminAccount admin = adminRepository.findAdminAccountByEmail(username);
 
         if(admin != null){
-            return new MyUserDetails(admin);
+            UserDetails currentAdmin = User.builder()
+                    .username(admin.getEmail())
+                    .password(admin.getPassword())
+                    .roles(ApplicationUserRole.ADMIN.name())
+                    .build();
+            return currentAdmin;
+
         } else if(user != null){
-            return new MyUserDetails(user);
+            UserDetails currentUser = User.builder()
+                    .username(user.getEmail())
+                    .password(user.getPassword())
+                    .roles(ApplicationUserRole.USER.name())
+                    .build();
+            return currentUser;
+
         } else{
             throw new UsernameNotFoundException("Account with email '" + username + "' not found.");
         }

@@ -4,19 +4,13 @@ package shaswata.taskmanager.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import shaswata.taskmanager.dto.AuthenticationRequest;
 import shaswata.taskmanager.dto.AuthenticationResponse;
-//import shaswata.taskmanager.service.AuthenticationService;
-import shaswata.taskmanager.service.MyUserDetailsService;
-import shaswata.taskmanager.security.JwtUtil;
+import shaswata.taskmanager.service.AuthenticationService;
 
-import javax.naming.AuthenticationException;
+
 
 
 @CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
@@ -24,14 +18,10 @@ import javax.naming.AuthenticationException;
 @RequestMapping("api/authentication")
 public class AuthenticationController{
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+
 
     @Autowired
-    private MyUserDetailsService userDetailsService;
-
-    @Autowired
-    private JwtUtil jwtTokenUtil;
+    private AuthenticationService authenticationService;
 
 
     @GetMapping(value = "/hello")
@@ -41,19 +31,11 @@ public class AuthenticationController{
 
 
     @PostMapping("/login")
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest){
+    public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) throws Exception{
 
-        try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(), authenticationRequest.getPassword()));
-        }
-        catch (BadCredentialsException e) {
-            System.out.println("Here");
-            return new ResponseEntity<>("Incorrect username or password", HttpStatus.BAD_REQUEST);
-        }
+        AuthenticationResponse authenticationResponse = authenticationService.login(authenticationRequest);
+        return ResponseEntity.ok(authenticationResponse);
 
-        final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getUsername());
-        final String jwt = jwtTokenUtil.generateToken(userDetails);
-        return ResponseEntity.ok(new AuthenticationResponse(jwt));
     }
 
 

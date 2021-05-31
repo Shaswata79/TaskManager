@@ -262,7 +262,7 @@ public class ProjectServiceTest {
         USER.setProjects(userProjectList);
 
         try {
-            List<ProjectDto> projectDtoList = service.getAllProjectsByUser(USER);
+            List<ProjectDto> projectDtoList = service.getAllProjects(USER);
             assertEquals(1, projectDtoList.size());
             assertEquals(PROJECT1_NAME, projectDtoList.get(0).getName());
         } catch (Exception e){

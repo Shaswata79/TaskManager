@@ -25,7 +25,7 @@ dependencies {
 	compile group: 'io.jsonwebtoken', name: 'jjwt', version: '0.2'
 	implementation 'javax.xml.bind:jaxb-api:2.3.0'
 
-
+	implementation group: 'com.google.guava', name: 'guava', version: '28.1-jre'
 
 
 }

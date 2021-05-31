@@ -16,8 +16,6 @@ public class UserDto {
 
     private List<TaskDto> tasks;
 
-    private String token;
-
     public String getName() {
         return name;
     }
@@ -58,11 +56,4 @@ public class UserDto {
         this.tasks = tasks;
     }
 
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
 }

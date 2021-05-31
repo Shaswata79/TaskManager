@@ -1,12 +1,18 @@
 package shaswata.taskmanager.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import shaswata.taskmanager.dto.ProjectDto;
 import shaswata.taskmanager.dto.TaskDto;
+import shaswata.taskmanager.exception.DuplicateEntityException;
+import shaswata.taskmanager.exception.InvalidInputException;
+import shaswata.taskmanager.exception.ResourceNotFoundException;
 import shaswata.taskmanager.model.Project;
 import shaswata.taskmanager.model.Task;
 import shaswata.taskmanager.model.UserAccount;
+import shaswata.taskmanager.repository.AdminRepository;
 import shaswata.taskmanager.repository.ProjectRepository;
 import shaswata.taskmanager.repository.TaskRepository;
 import shaswata.taskmanager.repository.UserRepository;
@@ -27,15 +33,66 @@ public class ProjectService {
     @Autowired
     UserRepository userRepo;
 
+    @Autowired
+    AdminRepository adminRepo;
+
+    @Autowired
+    UserService userService;
+
+
+    //////////////////////////////////////METHODS CALLED BY CONTROLLER////////////////////////////////////////////
+
+    @Transactional
+    public ProjectDto createProjectService(ProjectDto dto, UserDetails currentUser) throws Exception {
+        ProjectDto projectDto;
+        if(adminRepo.findAdminAccountByEmail(currentUser.getUsername()) != null){
+            projectDto = this.createProject(dto);
+        } else{
+            projectDto = this.createProject(dto);
+            userService.assignUserToProject(currentUser.getUsername(), projectDto.getName());
+        }
+        return projectDto;
+    }
+
+
+    @Transactional
+    public List<ProjectDto> getAllProjectService(UserDetails currentUser){
+        List<ProjectDto> projectDtoList;
+        if(adminRepo.findAdminAccountByEmail(currentUser.getUsername()) != null){
+            projectDtoList = this.getAllProjects();
+        } else{
+            UserAccount user = userRepo.findUserAccountByEmail(currentUser.getUsername());
+            projectDtoList = this.getAllProjects(user);
+        }
+        return projectDtoList;
+    }
+
+
+
+    @Transactional
+    public String deleteProjectService(String name, UserDetails currentUser) throws Exception {
+        String message;
+        if(adminRepo.findAdminAccountByEmail(currentUser.getUsername()) != null){
+            message = this.deleteProject(name);
+        } else{
+            UserAccount user = userRepo.findUserAccountByEmail(currentUser.getUsername());
+            message = this.deleteProject(name, user);
+        }
+        return message;
+    }
+
+
+
+    //////////////////////////////////////ACTUAL SERVICES/////////////////////////////////////////////////////////
 
 
     @Transactional
     public ProjectDto createProject(ProjectDto dto) throws Exception {
-        if(dto.getName() == null){
-            throw new Exception("Project name cannot be empty!");
+        if(dto.getName() == null || dto.getName() == ""){
+            throw new InvalidInputException("Project name cannot be empty!");
         }
         if(projectRepo.findProjectByName(dto.getName()) != null){
-            throw new Exception("Project '" + dto.getName() + "' already exists!");
+            throw new DuplicateEntityException("Project '" + dto.getName() + "' already exists!");
         }
 
         String name = dto.getName();
@@ -78,7 +135,7 @@ public class ProjectService {
 
 
     @Transactional
-    public List<ProjectDto> getAllProjectsByUser(UserAccount user){
+    public List<ProjectDto> getAllProjects(UserAccount user){
         List<Project> projectList = user.getProjects();
         List<ProjectDto> projectDtoList = new ArrayList<>();
 
@@ -96,12 +153,12 @@ public class ProjectService {
 
     @Transactional
     public String deleteProject(String name) throws Exception {
-        if(name == null){
-            throw new Exception("Project name cannot be empty!");
+        if(name == null || name == ""){
+            throw new InvalidInputException("Project name cannot be empty!");
         }
         Project project = projectRepo.findProjectByName(name);
         if(project == null){
-            throw new Exception("Project '" + name + "' not found!");
+            throw new ResourceNotFoundException("Project '" + name + "' not found!");
         }
 
         for(UserAccount user : userRepo.findAll()){
@@ -126,11 +183,11 @@ public class ProjectService {
                 String message = deleteProject(name);
                 return message;
             } else{
-                throw new Exception("User can only delete own projects");
+                throw new AccessDeniedException("User can only delete own projects");
             }
 
         } else {
-            throw new Exception("No such project found!");
+            throw new ResourceNotFoundException("No such project found!");
         }
     }
 
@@ -150,7 +207,24 @@ public class ProjectService {
     }
 
 
-    public boolean validUserOfProject(UserAccount user, String projectName){
+    public boolean validUserOfProject(String username, String projectName){
+        UserAccount user = userRepo.findUserAccountByEmail(username);
+        List<Project> userProjectList = user.getProjects();
+        Project project = projectRepo.findProjectByName(projectName);
+        if(project != null && userProjectList != null){
+            if(userProjectList.contains(project)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    public boolean validUserOfProject(String username, Long id){
+        Task task = taskRepo.findTaskById(id);
+        String projectName = task.getProject().getName();
+        UserAccount user = userRepo.findUserAccountByEmail(username);
+
         List<Project> userProjectList = user.getProjects();
         Project project = projectRepo.findProjectByName(projectName);
         if(project != null && userProjectList != null){

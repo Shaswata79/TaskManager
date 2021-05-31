@@ -11,9 +11,12 @@ import org.springframework.web.bind.annotation.*;
 import shaswata.taskmanager.dto.ProjectDto;
 import shaswata.taskmanager.dto.TaskDto;
 import shaswata.taskmanager.dto.UserDto;
-//import shaswata.taskmanager.service.AuthenticationService;
+import shaswata.taskmanager.model.Task;
+import shaswata.taskmanager.model.TaskStatus;
+import shaswata.taskmanager.model.UserAccount;
+import shaswata.taskmanager.service.ProjectService;
+import shaswata.taskmanager.service.TaskService;
 import shaswata.taskmanager.service.UserService;
-
 import java.util.List;
 
 
@@ -26,39 +29,41 @@ public class AdminController extends BaseController{
     UserService userService;
 
 
+
     @GetMapping("/projects_by_user")
-    public ResponseEntity<?> getProjectsByUser(@RequestParam("email") String email){
-        try{
-            UserDetails userDetails = super.getCurrentUser();
-            if (userDetails != null && userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"))) {
-                List<ProjectDto> userProjectList = userService.getProjectsByUser(email);
-                return new ResponseEntity<>(userProjectList, HttpStatus.OK);
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> getProjectsByUser(@RequestParam("email") String email) throws Exception {
 
-            } else{
-                return new ResponseEntity<>("Must be logged in as admin", HttpStatus.BAD_REQUEST);
-            }
+        List<ProjectDto> userProjectList = userService.getProjectsByUser(email);
+        return new ResponseEntity<>(userProjectList, HttpStatus.OK);
 
-        } catch(Exception e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+
     }
 
 
     @GetMapping("/tasks_by_user")
-    public ResponseEntity<?> getTasksByUser(@RequestParam("email") String email){
-        try{
-            UserDetails userDetails = super.getCurrentUser();
-            if (userDetails != null && userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"))) {
-                List<TaskDto> userTaskList = userService.getTasksByUser(email);
-                return new ResponseEntity<>(userTaskList, HttpStatus.OK);
-            } else{
-                return new ResponseEntity<>("Must be logged in as admin!", HttpStatus.BAD_REQUEST);
-            }
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> getTasksByUser(@RequestParam("email") String email) throws Exception{
 
-        } catch(Exception e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+        List<TaskDto> userTaskList = userService.getTasksByUser(email);
+        return new ResponseEntity<>(userTaskList, HttpStatus.OK);
+
     }
+
+
+
+
+    @GetMapping("/all_users")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> getAllUsers(){
+
+        List<UserDto> userList = userService.getAllUsers();
+        return new ResponseEntity<>(userList, HttpStatus.OK);
+
+    }
+
+
+
 }
 
 

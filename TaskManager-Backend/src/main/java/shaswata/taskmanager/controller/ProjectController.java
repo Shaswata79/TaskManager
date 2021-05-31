@@ -5,6 +5,7 @@ import jdk.internal.vm.compiler.collections.EconomicMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import shaswata.taskmanager.dto.ProjectDto;
@@ -24,7 +25,6 @@ public class ProjectController extends BaseController{
     @Autowired
     ProjectService projectService;
 
-
     @Autowired
     UserService userService;
 
@@ -34,64 +34,36 @@ public class ProjectController extends BaseController{
 
 
     @PostMapping("/create")
-    public ResponseEntity<?> createProject(@RequestBody ProjectDto projectDto) {
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
+    public ResponseEntity<?> createProject(@RequestBody ProjectDto projectDto) throws Exception {
 
-        try{
-            UserDetails userDetails = super.getCurrentUser();
-            if (userDetails != null && userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"))) {     //current user has role admin
-                projectDto = projectService.createProject(projectDto);
-                return new ResponseEntity<>(projectDto, HttpStatus.OK);
-            } else{
-                projectDto = projectService.createProject(projectDto);
-                userService.assignUserToProject(userDetails.getUsername(), projectDto.getName());  //assign the current user to project automatically
-                return new ResponseEntity<>(projectDto, HttpStatus.OK);
-            }
-
-        } catch(Exception e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+        UserDetails userDetails = super.getCurrentUser();
+        projectDto = projectService.createProjectService(projectDto, userDetails);
+        return new ResponseEntity<>(projectDto, HttpStatus.OK);
 
     }
 
 
 
     @GetMapping("/all")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
     public ResponseEntity<?> getAllProjects() {
-        try{
-            UserDetails userDetails = super.getCurrentUser();
-            if (userDetails != null && userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"))) {
-                List<ProjectDto> projectDtoList = projectService.getAllProjects();
-                return new ResponseEntity<>(projectDtoList, HttpStatus.OK);
-            } else{
-                UserAccount user = userRepository.findUserAccountByEmail(userDetails.getUsername());
-                List<ProjectDto> projectDtoList = projectService.getAllProjectsByUser(user);
-                return new ResponseEntity<>(projectDtoList, HttpStatus.OK);
-            }
 
-        } catch(Exception e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+        UserDetails userDetails = super.getCurrentUser();
+        List<ProjectDto> projectDtoList = projectService.getAllProjectService(userDetails);
+        return new ResponseEntity<>(projectDtoList, HttpStatus.OK);
+
     }
 
 
 
     @DeleteMapping("/delete/{name}")
-    public ResponseEntity<?> deleteProject(@PathVariable("name") String projectName) {
-        try {
-            UserDetails userDetails = super.getCurrentUser();
-            if (userDetails != null && userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"))) {
-                String message = projectService.deleteProject(projectName);
-                return new ResponseEntity<>(message, HttpStatus.OK);
-            } else{
-                UserAccount user = userRepository.findUserAccountByEmail(userDetails.getUsername());
-                String message = projectService.deleteProject(projectName, user);
-                return new ResponseEntity<>(message, HttpStatus.OK);
-            }
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
+    public ResponseEntity<?> deleteProject(@PathVariable("name") String projectName) throws Exception {
 
-
-        } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+        UserDetails userDetails = super.getCurrentUser();
+        String message = projectService.deleteProjectService(projectName, userDetails);
+        return new ResponseEntity<>(message, HttpStatus.OK);
 
     }
 

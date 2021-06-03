@@ -14,7 +14,7 @@ import shaswata.taskmanager.service.UserService;
 
 @CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
 @RestController
-@RequestMapping("api/user")
+@RequestMapping("/api/user")
 public class UserController extends BaseController{
 
     @Autowired
@@ -74,7 +74,7 @@ public class UserController extends BaseController{
 
     @PostMapping("/assign_to_task")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
-    public ResponseEntity<?> assignUserToProject(@RequestParam("username") String email, @RequestParam("taskID") Long id) throws Exception {
+    public ResponseEntity<?> assignUserToTask(@RequestParam("username") String email, @RequestParam("taskID") Long id) throws Exception {
 
         UserDetails userDetails = super.getCurrentUser();
         String message = userService.assignToTaskService(email, id, userDetails);

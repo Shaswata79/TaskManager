@@ -15,7 +15,7 @@ import java.util.List;
 
 @CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
 @RestController
-@RequestMapping("api/task")
+@RequestMapping("/api/task")
 public class TaskController extends BaseController{
 
     @Autowired

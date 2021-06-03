@@ -6,9 +6,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import shaswata.taskmanager.model.AdminAccount;
 import shaswata.taskmanager.repository.AdminRepository;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 
 @RestController

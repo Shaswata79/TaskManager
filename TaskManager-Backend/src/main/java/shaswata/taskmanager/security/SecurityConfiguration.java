@@ -35,7 +35,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
     protected void configure(HttpSecurity httpS) throws Exception{
         httpS.csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/api/user/register", "/api/user/hello", "/api/authentication/login").permitAll()
+                .antMatchers("/api/user/register",
+                        "/api/user/hello",
+                        "/api/authentication/login",
+                        "/v2/api-docs",
+                        "/swagger-ui.html",
+                        "/swagger-resources/**",
+                        "/webjars/**").permitAll()
                 .anyRequest().authenticated()
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 

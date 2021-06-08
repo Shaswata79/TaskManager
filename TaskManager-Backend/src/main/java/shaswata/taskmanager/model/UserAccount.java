@@ -1,9 +1,10 @@
 package shaswata.taskmanager.model;
 
 
-
-import javax.persistence.*;
-
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import java.util.List;
 
 
@@ -13,10 +14,6 @@ public class UserAccount extends Account{
     private List<Project> projects;
 
     private List<Task> tasks;
-
-    public UserAccount() {
-        this.setRole("USER");
-    }
 
 
     ///////////////////////////////////////////////

@@ -1,18 +1,14 @@
 package shaswata.taskmanager.controller;
 
 
-import jdk.internal.vm.compiler.collections.EconomicMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import shaswata.taskmanager.dto.ProjectDto;
-import shaswata.taskmanager.model.UserAccount;
-import shaswata.taskmanager.repository.UserRepository;
 import shaswata.taskmanager.service.ProjectService;
-import shaswata.taskmanager.service.UserService;
+import shaswata.taskmanager.service.ServiceFactory;
 
 import java.util.List;
 
@@ -22,23 +18,25 @@ import java.util.List;
 @RequestMapping("/api/project")
 public class ProjectController extends BaseController{
 
-    @Autowired
-    ProjectService projectService;
+
+    private ProjectService projectService;
+    private final ServiceFactory serviceFactory;
+
 
     @Autowired
-    UserService userService;
+    public ProjectController(ServiceFactory serviceFactory) {
+        this.serviceFactory = serviceFactory;
+    }
 
-    @Autowired
-    UserRepository userRepository;
 
 
 
     @PostMapping("/create")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
     public ResponseEntity<?> createProject(@RequestBody ProjectDto projectDto) throws Exception {
 
         UserDetails userDetails = super.getCurrentUser();
-        projectDto = projectService.createProjectService(projectDto, userDetails);
+        projectService = serviceFactory.getProjectService(userDetails);
+        projectDto = projectService.createProject(projectDto, userDetails);
         return new ResponseEntity<>(projectDto, HttpStatus.OK);
 
     }
@@ -46,11 +44,11 @@ public class ProjectController extends BaseController{
 
 
     @GetMapping("/all")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
-    public ResponseEntity<?> getAllProjects() {
+    public ResponseEntity<?> getAllProjects() throws Exception {
 
         UserDetails userDetails = super.getCurrentUser();
-        List<ProjectDto> projectDtoList = projectService.getAllProjectService(userDetails);
+        projectService = serviceFactory.getProjectService(userDetails);
+        List<ProjectDto> projectDtoList = projectService.getAllProjects(userDetails);
         return new ResponseEntity<>(projectDtoList, HttpStatus.OK);
 
     }
@@ -58,11 +56,11 @@ public class ProjectController extends BaseController{
 
 
     @DeleteMapping("/delete/{name}")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
     public ResponseEntity<?> deleteProject(@PathVariable("name") String projectName) throws Exception {
 
         UserDetails userDetails = super.getCurrentUser();
-        String message = projectService.deleteProjectService(projectName, userDetails);
+        projectService = serviceFactory.getProjectService(userDetails);
+        String message = projectService.deleteProject(projectName, userDetails);
         return new ResponseEntity<>(message, HttpStatus.OK);
 
     }
@@ -70,6 +68,8 @@ public class ProjectController extends BaseController{
 
 
 }
+
+
 
 
 

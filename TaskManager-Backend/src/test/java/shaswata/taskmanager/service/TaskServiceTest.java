@@ -8,20 +8,27 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import shaswata.taskmanager.dto.TaskDto;
 import shaswata.taskmanager.model.Project;
 import shaswata.taskmanager.model.Task;
 import shaswata.taskmanager.model.TaskStatus;
+import shaswata.taskmanager.model.UserAccount;
 import shaswata.taskmanager.repository.ProjectRepository;
 import shaswata.taskmanager.repository.TaskRepository;
+import shaswata.taskmanager.repository.UserRepository;
+import shaswata.taskmanager.security.ApplicationUserRole;
+import shaswata.taskmanager.service.impl.TaskServiceAdminImpl;
+import shaswata.taskmanager.service.impl.TaskServiceUserImpl;
 
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.lenient;
-import static org.junit.jupiter.api.Assertions.*;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -31,11 +38,20 @@ public class TaskServiceTest {
     TaskRepository taskRepo;
     @Mock
     ProjectRepository projectRepo;
+    @Mock
+    UserRepository userRepo;
 
     @InjectMocks
-    TaskService service;
+    TaskServiceUserImpl userService;
+    @InjectMocks
+    TaskServiceAdminImpl adminService;
+
+    private static final String USER_NAME = "ABCD";
+    private static final String USER_EMAIL = "someone@gmail.com";
+    private static final String USER_PASSWORD = "fSHBlfsuesefd";
 
     private static final String PROJECT_NAME = "Task Manager";
+    private static final String PROJECT2_NAME = "Job Manager";
     private static final long currentTimeInMillis = System.currentTimeMillis();
     private static final Date pastDate = new Date(currentTimeInMillis - 86400000);
 
@@ -51,10 +67,21 @@ public class TaskServiceTest {
     private static final TaskStatus TASK3_STATUS = TaskStatus.closed;
     private static final Long TASK3_ID = (long) 6677644;
 
+    private final UserAccount USER = new UserAccount();
     private final Project PROJECT = new Project();
+    private final Project PROJECT2 = new Project();
     private final Task TASK1 = new Task();
     private final Task TASK2 = new Task();
     private final Task TASK3 = new Task();
+
+
+    private final UserDetails CURRENT_USER = User.builder()
+            .username(USER_EMAIL)
+            .password(USER_PASSWORD)
+            .roles(ApplicationUserRole.USER.name())
+            .build();
+
+
 
     @BeforeEach
     public void setMockOutputs(){
@@ -75,31 +102,56 @@ public class TaskServiceTest {
             TASK2.setId(TASK2_ID);
             taskList.add(TASK2);
 
-            PROJECT.setTasks(taskList);
-            return taskList;
-
-        });
-
-        lenient().when(taskRepo.findAll()).thenAnswer((InvocationOnMock invocation) -> {
-            List<Task> taskList = new ArrayList<>();
-
-            TASK1.setProject(PROJECT);
-            TASK1.setDescription(TASK1_DESCRIPTION);
-            TASK1.setStatus(TASK1_STATUS);
-            TASK1.setDueDate(TASK1_DUEDATE);
-            taskList.add(TASK1);
-
-            TASK2.setProject(PROJECT);
-            TASK2.setDescription(TASK2_DESCRIPTION);
-            TASK2.setStatus(TASK2_STATUS);
-            TASK2.setDueDate(new Date(currentTimeInMillis + 86400000));
-            TASK2.setId(TASK2_ID);
-            taskList.add(TASK2);
+            TASK3.setProject(PROJECT);
+            TASK3.setDescription(TASK3_DESCRIPTION);
+            TASK3.setStatus(TASK3_STATUS);
+            TASK3.setId(TASK3_ID);
+            taskList.add(TASK3);
 
             PROJECT.setTasks(taskList);
             return taskList;
 
         });
+
+
+        lenient().when(userRepo.findUserAccountByEmail(anyString())).thenAnswer((InvocationOnMock invocation) -> {
+            if (invocation.getArgument(0).equals(USER_EMAIL)) {
+
+                List<Task> taskList = new ArrayList<>();
+                List<Task> userTaskList = new ArrayList<>();
+                taskList.add(TASK1);
+                taskList.add(TASK2);
+                userTaskList.add(TASK1);
+                userTaskList.add(TASK2);
+                List<Project> projectList = new ArrayList<>();
+                projectList.add(PROJECT);
+
+                TASK1.setStatus(TASK1_STATUS);
+                TASK1.setDescription(TASK1_DESCRIPTION);
+                TASK1.setProject(PROJECT);
+
+                TASK2.setId(TASK2_ID);
+                TASK2.setDescription(TASK2_DESCRIPTION);
+                TASK2.setStatus(TASK2_STATUS);
+                TASK2.setProject(PROJECT);
+
+                PROJECT.setTasks(taskList);
+                PROJECT.setName(PROJECT_NAME);
+
+                USER.setName(USER_NAME);
+                USER.setPassword(USER_PASSWORD);
+                USER.setEmail(USER_EMAIL);
+                USER.setProjects(projectList);
+                USER.setTasks(userTaskList);
+
+
+                return USER;
+            } else {
+                return null;
+            }
+
+        });
+
 
         lenient().when(taskRepo.findTaskByProject(PROJECT)).thenAnswer((InvocationOnMock invocation) -> {
             List<Task> taskList = new ArrayList<>();
@@ -210,6 +262,13 @@ public class TaskServiceTest {
                 PROJECT.setTasks(taskList);
                 return PROJECT;
 
+            } else if (invocation.getArgument(0).equals(PROJECT2_NAME)) {
+                List<Task> taskList = new ArrayList<>();
+
+                PROJECT2.setName(PROJECT2_NAME);
+                PROJECT2.setTasks(taskList);
+                return PROJECT2;
+
             } else {
                 return null;
             }
@@ -234,7 +293,7 @@ public class TaskServiceTest {
         dto.setDescription("Create Mobile App");
 
         try{
-            dto = service.createTask(dto);
+            dto = userService.createTask(dto, CURRENT_USER);
             assertEquals(PROJECT_NAME, dto.getProjectName());
             assertEquals("Create Mobile App", dto.getDescription());
             assertEquals(TaskStatus.open, dto.getStatus());
@@ -255,12 +314,29 @@ public class TaskServiceTest {
         dto.setDescription(null);
 
         try{
-            service.createTask(dto);
+            userService.createTask(dto, CURRENT_USER);
             fail("Must throw exception");
         }catch (Exception e){
             assertEquals("Task description, status or project name cannot be empty!", e.getMessage());
         }
     }
+
+
+    @Test
+    public void testCreateTaskInvalidAccess(){
+        TaskDto dto = new TaskDto();
+        dto.setProjectName(PROJECT2_NAME);
+        dto.setStatus(TaskStatus.open);
+        dto.setDescription(null);
+
+        try{
+            userService.createTask(dto, CURRENT_USER);
+            fail("Must throw exception");
+        }catch (Exception e){
+            assertEquals("Task description, status or project name cannot be empty!", e.getMessage());
+        }
+    }
+
 
 
     @Test
@@ -271,7 +347,7 @@ public class TaskServiceTest {
         dto.setDescription(TASK1_DESCRIPTION);
 
         try{
-            service.createTask(dto);
+            userService.createTask(dto, CURRENT_USER);
             fail("Must throw exception");
         }catch (Exception e){
             assertEquals("Task already exists in project", e.getMessage());
@@ -287,7 +363,7 @@ public class TaskServiceTest {
         dto.setDescription("Create mobile app");
 
         try{
-            service.createTask(dto);
+            userService.createTask(dto, CURRENT_USER);
             fail("Must throw exception");
         }catch (Exception e){
             assertEquals("A task can only be created in an existing project!", e.getMessage());
@@ -305,7 +381,7 @@ public class TaskServiceTest {
         dto.setDescription("Create mobile app");
 
         try{
-            dto = service.editTask(TASK2_ID, dto);
+            dto = userService.editTask(TASK2_ID, dto, CURRENT_USER);
             assertEquals("Create mobile app", dto.getDescription());
             assertEquals(TaskStatus.inProgress, dto.getStatus());
             assertEquals(PROJECT_NAME, dto.getProjectName());
@@ -325,7 +401,7 @@ public class TaskServiceTest {
         dto.setDescription(TASK1_DESCRIPTION);
 
         try{
-            service.editTask(null, dto);
+            userService.editTask(null, dto, CURRENT_USER);
             fail("Must throw exception");
         }catch (Exception e){
             assertEquals("Task ID cannot be empty!", e.getMessage());
@@ -343,7 +419,7 @@ public class TaskServiceTest {
         dto.setDescription(TASK1_DESCRIPTION);
 
         try{
-            service.editTask((long)9999999, dto);
+            userService.editTask((long)9999999, dto, CURRENT_USER);
             fail("Must throw exception");
         }catch (Exception e){
             assertEquals("Task with given ID not found", e.getMessage());
@@ -360,7 +436,7 @@ public class TaskServiceTest {
         dto.setDescription("Do something");
 
         try{
-            service.editTask(TASK3_ID, dto);
+            adminService.editTask(TASK3_ID, dto, CURRENT_USER);
             fail("Must throw exception");
         }catch (Exception e){
             assertEquals("Task has already been closed so it cannot be updated", e.getMessage());
@@ -372,7 +448,7 @@ public class TaskServiceTest {
     @Test
     public void testGetTask(){
         try{
-            TaskDto dto = service.getTask(TASK2_ID);
+            TaskDto dto = adminService.getTask(TASK2_ID, CURRENT_USER);
             assertEquals(TASK2_DESCRIPTION, dto.getDescription());
             assertEquals(TASK2_STATUS, dto.getStatus());
             assertEquals(PROJECT_NAME, dto.getProjectName());
@@ -383,9 +459,20 @@ public class TaskServiceTest {
 
 
     @Test
+    public void testGetTaskInvalidAccess(){
+        try{
+            TaskDto dto = userService.getTask(TASK3_ID, CURRENT_USER);
+            fail("Should throw exception");
+        } catch(Exception e){
+            assertEquals("Not a valid user of this task", e.getMessage());
+        }
+    }
+
+
+    @Test
     public void testGetTaskNullID(){
         try{
-            TaskDto dto = service.getTask(null);
+            TaskDto dto = adminService.getTask(null, CURRENT_USER);
             fail("Should throw exception");
         } catch(Exception e){
             assertEquals("Task ID cannot be empty!", e.getMessage());
@@ -397,7 +484,7 @@ public class TaskServiceTest {
     @Test
     public void testGetNonExistentTask(){
         try{
-            TaskDto dto = service.getTask(101010101L);
+            TaskDto dto = adminService.getTask(101010101L, CURRENT_USER);
             fail("Should throw exception");
         } catch(Exception e){
             assertEquals("Task with given ID not found", e.getMessage());
@@ -409,7 +496,21 @@ public class TaskServiceTest {
     @Test
     public void testGetAllTasks(){
         try{
-            List<TaskDto> tasks = service.getAllTasks();
+            List<TaskDto> tasks = adminService.getAllTasks(CURRENT_USER);
+            assertEquals(3, tasks.size());
+            assertEquals(TASK1_DESCRIPTION, tasks.get(0).getDescription());
+            assertEquals(TASK2_DESCRIPTION, tasks.get(1).getDescription());
+            assertEquals(TASK3_DESCRIPTION, tasks.get(2).getDescription());
+        } catch(Exception e){
+            fail(e.getMessage());
+        }
+    }
+
+
+    @Test
+    public void testGetAllTasksUser(){
+        try{
+            List<TaskDto> tasks = userService.getAllTasks(CURRENT_USER);
             assertEquals(2, tasks.size());
             assertEquals(TASK1_DESCRIPTION, tasks.get(0).getDescription());
             assertEquals(TASK2_DESCRIPTION, tasks.get(1).getDescription());
@@ -424,7 +525,7 @@ public class TaskServiceTest {
     public void testGetTaskByProject(){
 
         try{
-            List<TaskDto> tasks = service.getTasksByProject(PROJECT_NAME);
+            List<TaskDto> tasks = adminService.getTasksByProject(PROJECT_NAME, CURRENT_USER);
             assertEquals(2, tasks.size());
             assertEquals(TASK1_DESCRIPTION, tasks.get(0).getDescription());
             assertEquals(TASK2_DESCRIPTION, tasks.get(1).getDescription());
@@ -439,7 +540,7 @@ public class TaskServiceTest {
     @Test
     public void testGetTaskByNullProjectName(){
         try{
-            List<TaskDto> tasks = service.getTasksByProject(null);
+            List<TaskDto> tasks = adminService.getTasksByProject(null, CURRENT_USER);
             fail("Should throw exception");
         } catch(Exception e){
             assertEquals("Project name cannot be empty!", e.getMessage());
@@ -450,7 +551,7 @@ public class TaskServiceTest {
     @Test
     public void testGetTaskByNonExistentProject(){
         try{
-            List<TaskDto> tasks = service.getTasksByProject("Imaginary Project");
+            List<TaskDto> tasks = adminService.getTasksByProject("Imaginary Project", CURRENT_USER);
             fail("Should throw exception");
         } catch(Exception e){
             assertEquals("Project 'Imaginary Project' not found!", e.getMessage());
@@ -461,7 +562,7 @@ public class TaskServiceTest {
     @Test
     public void testGetTaskByOpenStatus(){
         try{
-            List<TaskDto> dtos = service.getTasksByStatus("open");
+            List<TaskDto> dtos = adminService.getTasksByStatus("open", CURRENT_USER);
             assertEquals(2, dtos.size());
             assertEquals(TASK1_DESCRIPTION, dtos.get(0).getDescription());
             assertEquals(TASK1_STATUS, dtos.get(0).getStatus());
@@ -475,7 +576,7 @@ public class TaskServiceTest {
     @Test
     public void testGetTaskByClosedStatus(){
         try{
-            List<TaskDto> dtos = service.getTasksByStatus("closed");
+            List<TaskDto> dtos = adminService.getTasksByStatus("closed", CURRENT_USER);
             assertEquals(1, dtos.size());
             assertEquals(TASK3_DESCRIPTION, dtos.get(0).getDescription());
             assertEquals(TASK3_STATUS, dtos.get(0).getStatus());
@@ -488,7 +589,7 @@ public class TaskServiceTest {
     @Test
     public void testGetTaskByNullStatus(){
         try{
-            List<TaskDto> dtos = service.getTasksByStatus(null);
+            List<TaskDto> dtos = adminService.getTasksByStatus(null, CURRENT_USER);
             fail("Should throw exception");
         } catch(Exception e){
             assertEquals("Task status cannot be empty!", e.getMessage());
@@ -499,7 +600,7 @@ public class TaskServiceTest {
     @Test
     public void testGetExpiredTasks(){
         try{
-            List<TaskDto> tasks = service.getExpiredTasks();
+            List<TaskDto> tasks = adminService.getExpiredTasks(CURRENT_USER);
             assertEquals(1, tasks.size());
             assertEquals(TASK1_DESCRIPTION, tasks.get(0).getDescription());
         } catch (Exception e){
@@ -510,3 +611,5 @@ public class TaskServiceTest {
 
 
 }
+
+

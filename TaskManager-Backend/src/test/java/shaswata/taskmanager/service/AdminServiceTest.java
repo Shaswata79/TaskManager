@@ -1,7 +1,4 @@
-
-
 package shaswata.taskmanager.service;
-
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,10 +7,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import shaswata.taskmanager.dto.ProjectDto;
 import shaswata.taskmanager.dto.TaskDto;
+import shaswata.taskmanager.dto.UserDto;
 import shaswata.taskmanager.model.Project;
 import shaswata.taskmanager.model.Task;
 import shaswata.taskmanager.model.TaskStatus;
@@ -21,9 +17,6 @@ import shaswata.taskmanager.model.UserAccount;
 import shaswata.taskmanager.repository.ProjectRepository;
 import shaswata.taskmanager.repository.TaskRepository;
 import shaswata.taskmanager.repository.UserRepository;
-import shaswata.taskmanager.security.ApplicationUserRole;
-import shaswata.taskmanager.service.impl.ProjectServiceAdminImpl;
-import shaswata.taskmanager.service.impl.ProjectServiceUserImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,11 +25,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
 
 
 @ExtendWith(MockitoExtension.class)
-public class ProjectServiceTest {
+public class AdminServiceTest {
 
     @Mock
     ProjectRepository projectRepo;
@@ -46,13 +39,16 @@ public class ProjectServiceTest {
     UserRepository userRepo;
 
     @InjectMocks
-    ProjectServiceAdminImpl adminService;
-    @InjectMocks
-    ProjectServiceUserImpl userService;
+    AdminService adminService;
+
 
     private static final String USER_NAME = "ABCD";
     private static final String USER_EMAIL = "someone@gmail.com";
     private static final String USER_PASSWORD = "fSHBlfsuesefd";
+
+    private static final String USER2_NAME = "ABCD";
+    private static final String USER2_EMAIL = "someone@gmail.com";
+    private static final String USER2_PASSWORD = "fSHBlfsuesefd";
 
     private static final String PROJECT1_NAME = "Task Manager";
     private static final String PROJECT2_NAME = "Another Project";
@@ -67,16 +63,11 @@ public class ProjectServiceTest {
 
 
     private final UserAccount USER = new UserAccount();
+    private final UserAccount USER2 = new UserAccount();
     private final Project PROJECT1 = new Project();
     private final Project PROJECT2 = new Project();
     private final Task TASK1 = new Task();
     private final Task TASK2 = new Task();
-
-    private final UserDetails CURRENT_USER = User.builder()
-                                    .username(USER_EMAIL)
-                                    .password(USER_PASSWORD)
-                                    .roles(ApplicationUserRole.USER.name())
-                                    .build();
 
 
     @BeforeEach
@@ -110,6 +101,30 @@ public class ProjectServiceTest {
         });
 
 
+        lenient().when(userRepo.findAll()).thenAnswer((InvocationOnMock invocation) -> {
+
+            List<UserAccount> userList = new ArrayList<>();
+
+            USER.setEmail(USER_EMAIL);
+            USER.setPassword(USER_PASSWORD);
+            USER.setName(USER_NAME);
+            USER.setTasks(new ArrayList<Task>());
+            USER.setProjects(new ArrayList<Project>());
+
+            USER2.setEmail(USER2_EMAIL);
+            USER2.setPassword(USER2_PASSWORD);
+            USER2.setName(USER2_NAME);
+            USER2.setTasks(new ArrayList<Task>());
+            USER2.setProjects(new ArrayList<Project>());
+
+            userList.add(USER);
+            userList.add(USER2);
+
+            return userList;
+
+        });
+
+
         lenient().when(userRepo.findUserAccountByEmail(anyString())).thenAnswer((InvocationOnMock invocation) -> {
             if (invocation.getArgument(0).equals(USER_EMAIL)) {
 
@@ -120,8 +135,6 @@ public class ProjectServiceTest {
                 userTaskList.add(TASK1);
                 List<Project> projectList = new ArrayList<>();
                 projectList.add(PROJECT1);
-
-
 
                 TASK1.setStatus(TASK1_STATUS);
                 TASK1.setDescription(TASK1_DESCRIPTION);
@@ -186,143 +199,45 @@ public class ProjectServiceTest {
 
     }
 
-
     @Test
-    public void testCreateProject(){
-        ProjectDto dto = new ProjectDto();
-        dto.setName("New Project");
-        List<TaskDto> taskDtoList = new ArrayList<>();
-
-        TaskDto taskDto = new TaskDto();
-        taskDto.setDescription("Create Website");
-        taskDto.setProjectName("New Project");
-        taskDto.setStatus(TaskStatus.open);
-        taskDtoList.add(taskDto);
-
-        dto.setTasks(taskDtoList);
+    public void testGetAllProjectsByUser(){
 
         try {
-            dto = userService.createProject(dto, CURRENT_USER);
-            assertEquals("New Project", dto.getName());
-            assertEquals("Create Website", dto.getTasks().get(0).getDescription());
-            assertEquals("New Project", dto.getTasks().get(0).getProjectName());
-            assertEquals(1, dto.getTasks().size());
-        } catch (Exception e){
-            fail(e.getMessage());
-        }
-
-    }
-
-
-    @Test
-    public void testCreateProjectNullName(){
-        ProjectDto dto = new ProjectDto();
-        dto.setName(null);
-        List<TaskDto> taskDtoList = new ArrayList<>();
-        dto.setTasks(taskDtoList);
-
-        try {
-            dto = userService.createProject(dto, CURRENT_USER);
-            fail("Should throw exception");
-        } catch(Exception e){
-            assertEquals("Project name cannot be empty!", e.getMessage());
-        }
-    }
-
-
-    @Test
-    public void testCreateProjectAlreadyExists(){
-        ProjectDto dto = new ProjectDto();
-        dto.setName(PROJECT1_NAME);
-        List<TaskDto> taskDtoList = new ArrayList<>();
-        dto.setTasks(taskDtoList);
-
-        try {
-            dto = userService.createProject(dto, CURRENT_USER);
-            fail("Should throw exception");
-        } catch(Exception e){
-            assertEquals("Project '" + PROJECT1_NAME + "' already exists!", e.getMessage());
-        }
-    }
-
-
-
-    @Test
-    public void testDeleteProject() {
-        try {
-            userService.deleteProject(PROJECT1_NAME, CURRENT_USER);
-            verify(projectRepo, times(1)).deleteProjectByName(any());
-            verify(userRepo, times(1)).findAll();
-
-        } catch (Exception e) {
-            fail(e.getMessage());
-        }
-    }
-
-
-    @Test
-    public void testDeleteProjectInvalidAccess() {
-        try {
-            userService.deleteProject(PROJECT2_NAME, CURRENT_USER);
-            fail("Should throw exception");
-
-        } catch (Exception e) {
-            assertEquals("User can only delete own projects", e.getMessage());
-        }
-    }
-
-
-    @Test
-    public void testDeleteProjectNullName() {
-        try {
-            userService.deleteProject(null, CURRENT_USER);
-            fail("Should throw an exception");
-        } catch (Exception e) {
-            assertEquals("Project name cannot be empty!", e.getMessage());
-        }
-    }
-
-
-    @Test
-    public void testDeleteNonExistentProject() {
-        try {
-            userService.deleteProject("Some name", CURRENT_USER);
-            fail("Should throw an exception");
-        } catch (Exception e) {
-            assertEquals("Project 'Some name' not found!", e.getMessage());
-        }
-    }
-
-
-    @Test
-    public void testGetAllProjectsUser(){
-        try{
-            List<ProjectDto> projectDtoList = userService.getAllProjects(CURRENT_USER);
+            List<ProjectDto> projectDtoList = adminService.getProjectsByUser(USER_EMAIL);
             assertEquals(1, projectDtoList.size());
             assertEquals(PROJECT1_NAME, projectDtoList.get(0).getName());
         } catch (Exception e){
             fail(e.getMessage());
         }
+
     }
 
+
+
     @Test
-    public void testGetAllProjectsAdmin(){
-        try{
-            List<ProjectDto> projectDtoList = adminService.getAllProjects(CURRENT_USER);
-            assertEquals(2, projectDtoList.size());
-            assertEquals(PROJECT1_NAME, projectDtoList.get(0).getName());
-            assertEquals(PROJECT2_NAME, projectDtoList.get(1).getName());
+    public void testGetAllTasksByUser(){
+
+        try {
+            List<TaskDto> taskDtoList = adminService.getTasksByUser(USER_EMAIL);
+            assertEquals(1, taskDtoList.size());
+            assertEquals(TASK1_DESCRIPTION, taskDtoList.get(0).getDescription());
+        } catch (Exception e){
+            fail(e.getMessage());
+        }
+
+    }
+
+
+
+    @Test
+    public void testGetAllUsers(){
+        try {
+            List<UserDto> userDtoList = adminService.getAllUsers();
+            assertEquals(2, userDtoList.size());
+            assertEquals(USER_EMAIL, userDtoList.get(0).getEmail());
+            assertEquals(USER2_EMAIL, userDtoList.get(1).getEmail());
         } catch (Exception e){
             fail(e.getMessage());
         }
     }
-
-
-
-
-
-
-
 }
-
-

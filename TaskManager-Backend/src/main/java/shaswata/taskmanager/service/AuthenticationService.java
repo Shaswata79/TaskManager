@@ -11,20 +11,23 @@ import shaswata.taskmanager.dto.AuthenticationRequest;
 import shaswata.taskmanager.dto.AuthenticationResponse;
 import shaswata.taskmanager.security.JwtUtil;
 
-
 import javax.transaction.Transactional;
 
 @Service
 public class AuthenticationService {
 
-    @Autowired
-    private MyUserDetailsService userDetailsService;
+
+    private final MyUserDetailsService userDetailsService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtTokenUtil;
+
 
     @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private JwtUtil jwtTokenUtil;
+    public AuthenticationService(MyUserDetailsService userDetailsService, AuthenticationManager authenticationManager, JwtUtil jwtTokenUtil) {
+        this.userDetailsService = userDetailsService;
+        this.authenticationManager = authenticationManager;
+        this.jwtTokenUtil = jwtTokenUtil;
+    }
 
 
     @Transactional

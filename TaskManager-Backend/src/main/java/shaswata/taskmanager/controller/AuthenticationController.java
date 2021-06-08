@@ -19,9 +19,12 @@ import shaswata.taskmanager.service.AuthenticationService;
 public class AuthenticationController{
 
 
+    private final AuthenticationService authenticationService;
 
     @Autowired
-    private AuthenticationService authenticationService;
+    public AuthenticationController(AuthenticationService authenticationService) {
+        this.authenticationService = authenticationService;
+    }
 
 
     @GetMapping(value = "/hello")

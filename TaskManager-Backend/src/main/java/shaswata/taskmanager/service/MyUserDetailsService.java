@@ -11,22 +11,22 @@ import shaswata.taskmanager.model.UserAccount;
 import shaswata.taskmanager.repository.AdminRepository;
 import shaswata.taskmanager.repository.UserRepository;
 import shaswata.taskmanager.security.ApplicationUserRole;
-import shaswata.taskmanager.security.JwtUtil;
-
-
 
 
 @Service
 public class MyUserDetailsService implements UserDetailsService {
 
-    @Autowired
-    UserRepository userRepository;
+
+    private final UserRepository userRepository;
+    private final AdminRepository adminRepository;
+
 
     @Autowired
-    AdminRepository adminRepository;
+    public MyUserDetailsService(UserRepository userRepository, AdminRepository adminRepository) {
+        this.userRepository = userRepository;
+        this.adminRepository = adminRepository;
+    }
 
-    @Autowired
-    JwtUtil jwtUtil;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

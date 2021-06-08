@@ -4,11 +4,10 @@ package shaswata.taskmanager.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import shaswata.taskmanager.dto.TaskDto;
-import shaswata.taskmanager.service.ProjectService;
+import shaswata.taskmanager.service.ServiceFactory;
 import shaswata.taskmanager.service.TaskService;
 
 import java.util.List;
@@ -18,20 +17,23 @@ import java.util.List;
 @RequestMapping("/api/task")
 public class TaskController extends BaseController{
 
-    @Autowired
-    TaskService taskService;
+
+    private TaskService taskService;
+    private final ServiceFactory serviceFactory;
+
 
     @Autowired
-    ProjectService projectService;
-
+    public TaskController(ServiceFactory serviceFactory) {
+        this.serviceFactory = serviceFactory;
+    }
 
 
     @PostMapping("/create")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
     public ResponseEntity<?> createTask(@RequestBody TaskDto taskDto) throws Exception {
 
         UserDetails userDetails = super.getCurrentUser();
-        taskDto = taskService.createTaskService(taskDto, userDetails);
+        taskService = serviceFactory.getTaskService(userDetails);
+        taskDto = taskService.createTask(taskDto, userDetails);
         return new ResponseEntity<>(taskDto, HttpStatus.OK);
 
     }
@@ -39,11 +41,11 @@ public class TaskController extends BaseController{
 
 
     @PutMapping("/edit/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
     public ResponseEntity<?> editTask(@PathVariable("id") Long id, @RequestBody TaskDto taskDto) throws Exception {
 
         UserDetails userDetails = super.getCurrentUser();
-        taskDto = taskService.editTaskService(id, taskDto,userDetails);
+        taskService = serviceFactory.getTaskService(userDetails);
+        taskDto = taskService.editTask(id, taskDto,userDetails);
         return new ResponseEntity<>(taskDto, HttpStatus.OK);
 
     }
@@ -51,11 +53,11 @@ public class TaskController extends BaseController{
 
 
     @GetMapping("/get/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
     public ResponseEntity<?> getTask(@PathVariable("id") Long id) throws Exception {
 
         UserDetails userDetails = super.getCurrentUser();
-        TaskDto taskDto = taskService.getTaskService(id, userDetails);
+        taskService = serviceFactory.getTaskService(userDetails);
+        TaskDto taskDto = taskService.getTask(id, userDetails);
         return new ResponseEntity<>(taskDto, HttpStatus.OK);
 
     }
@@ -63,11 +65,11 @@ public class TaskController extends BaseController{
 
 
     @GetMapping("/all")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
-    public ResponseEntity<?> getAllTasks(){
+    public ResponseEntity<?> getAllTasks() throws Exception {
 
         UserDetails userDetails = super.getCurrentUser();
-        List<TaskDto> taskList = taskService.getAllTasksService(userDetails);
+        taskService = serviceFactory.getTaskService(userDetails);
+        List<TaskDto> taskList = taskService.getAllTasks(userDetails);
         return new ResponseEntity<>(taskList, HttpStatus.OK);
 
     }
@@ -75,11 +77,11 @@ public class TaskController extends BaseController{
 
 
     @GetMapping("/all_by_project")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
     public ResponseEntity<?> getAllTasksByProject(@RequestParam String projectName) throws Exception {
 
         UserDetails userDetails = super.getCurrentUser();
-        List<TaskDto> taskDtoList = taskService.getTasksByProjectService(projectName, userDetails);
+        taskService = serviceFactory.getTaskService(userDetails);
+        List<TaskDto> taskDtoList = taskService.getTasksByProject(projectName, userDetails);
         return new ResponseEntity<>(taskDtoList, HttpStatus.OK);
 
     }
@@ -87,11 +89,11 @@ public class TaskController extends BaseController{
 
 
     @GetMapping("/all_expired_tasks")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
     public ResponseEntity<?> getAllExpiredTasks() throws Exception {
 
         UserDetails userDetails = super.getCurrentUser();
-        List<TaskDto> taskList = taskService.getExpiredTasksService(userDetails);
+        taskService = serviceFactory.getTaskService(userDetails);
+        List<TaskDto> taskList = taskService.getExpiredTasks(userDetails);
         return new ResponseEntity<>(taskList, HttpStatus.OK);
 
     }
@@ -99,16 +101,18 @@ public class TaskController extends BaseController{
 
 
     @GetMapping("/all_by_status")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
     public ResponseEntity<?> getAllTasksByStatus(@RequestParam String status) throws Exception {
 
         UserDetails userDetails = super.getCurrentUser();
-        List<TaskDto> taskList = taskService.getTasksByStatusService(status, userDetails);
+        taskService = serviceFactory.getTaskService(userDetails);
+        List<TaskDto> taskList = taskService.getTasksByStatus(status, userDetails);
         return new ResponseEntity<>(taskList, HttpStatus.OK);
 
     }
 
 
 }
+
+
 
 

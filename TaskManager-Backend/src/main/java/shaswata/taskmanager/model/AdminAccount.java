@@ -10,16 +10,13 @@ public class AdminAccount extends Account{
 
     @Id
     public String getEmail() {
-        return super.getEmail();
+            return super.getEmail();
     }
 
     public void setEmail(String email) {
         super.setEmail(email);
     }
 
-    public AdminAccount() {
-        this.setRole("ADMIN");
-    }
 }
 
 

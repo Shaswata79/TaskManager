@@ -1,6 +1,6 @@
 package shaswata.taskmanager.service.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -25,21 +25,12 @@ import java.util.stream.Collectors;
 
 
 @Service
+@RequiredArgsConstructor
 public class TaskServiceUserImpl implements TaskService {
 
     private final ProjectRepository projectRepo;
     private final TaskRepository taskRepo;
     private final UserRepository userRepo;
-
-
-
-    @Autowired
-    public TaskServiceUserImpl(ProjectRepository projectRepo, TaskRepository taskRepo, UserRepository userRepo) {
-        this.projectRepo = projectRepo;
-        this.taskRepo = taskRepo;
-        this.userRepo = userRepo;
-
-    }
 
 
     @Transactional

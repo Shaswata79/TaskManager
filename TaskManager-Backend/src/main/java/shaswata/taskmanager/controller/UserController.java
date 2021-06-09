@@ -1,7 +1,7 @@
 package shaswata.taskmanager.controller;
 
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,28 +16,12 @@ import shaswata.taskmanager.service.impl.UserServiceUserImpl;
 @CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
 @RestController
 @RequestMapping("/api/user")
+@RequiredArgsConstructor
 public class UserController extends BaseController{
 
 
     private UserService userService;
     private final ServiceFactory serviceFactory;
-
-
-    @Autowired
-    public UserController(ServiceFactory serviceFactory) {
-        this.serviceFactory = serviceFactory;
-    }
-
-
-    @GetMapping("/hello")
-    public ResponseEntity<?> hello(){
-        try{
-            return new ResponseEntity<>("Hello World", HttpStatus.OK);
-        } catch (Exception e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
-
-    }
 
 
     @PostMapping("/register")

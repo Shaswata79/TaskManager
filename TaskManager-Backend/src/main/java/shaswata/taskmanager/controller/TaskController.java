@@ -1,7 +1,7 @@
 package shaswata.taskmanager.controller;
 
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,17 +15,12 @@ import java.util.List;
 @CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
 @RestController
 @RequestMapping("/api/task")
+@RequiredArgsConstructor
 public class TaskController extends BaseController{
 
 
     private TaskService taskService;
     private final ServiceFactory serviceFactory;
-
-
-    @Autowired
-    public TaskController(ServiceFactory serviceFactory) {
-        this.serviceFactory = serviceFactory;
-    }
 
 
     @PostMapping("/create")

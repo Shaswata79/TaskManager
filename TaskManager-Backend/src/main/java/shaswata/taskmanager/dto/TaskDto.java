@@ -1,13 +1,16 @@
 package shaswata.taskmanager.dto;
 
 import com.sun.istack.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 import shaswata.taskmanager.model.TaskStatus;
-
 
 import java.sql.Date;
 
 
 
+@Getter
+@Setter
 public class TaskDto {
 
     @NotNull
@@ -23,43 +26,5 @@ public class TaskDto {
 
     private Long id;
 
-    public Long getId() {
-        return id;
-    }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getProjectName() {
-        return projectName;
-    }
-
-    public void setProjectName(String projectName) {
-        this.projectName = projectName;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public TaskStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(TaskStatus status) {
-        this.status = status;
-    }
-
-    public Date getDueDate() {
-        return dueDate;
-    }
-
-    public void setDueDate(Date dueDate) {
-        this.dueDate = dueDate;
-    }
 }

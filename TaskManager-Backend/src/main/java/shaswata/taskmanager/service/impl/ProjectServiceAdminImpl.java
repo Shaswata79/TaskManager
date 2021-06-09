@@ -1,6 +1,6 @@
 package shaswata.taskmanager.service.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import shaswata.taskmanager.dto.ProjectDto;
@@ -21,20 +21,12 @@ import java.util.List;
 
 
 @Service
+@RequiredArgsConstructor
 public class ProjectServiceAdminImpl implements ProjectService {
 
     private final ProjectRepository projectRepo;
     private final TaskRepository taskRepo;
     private final UserRepository userRepo;
-
-
-    @Autowired
-    public ProjectServiceAdminImpl(ProjectRepository projectRepo, TaskRepository taskRepo, UserRepository userRepo) {
-        this.projectRepo = projectRepo;
-        this.taskRepo = taskRepo;
-        this.userRepo = userRepo;
-
-    }
 
 
     @Override

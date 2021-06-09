@@ -1,6 +1,6 @@
 package shaswata.taskmanager.service.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import shaswata.taskmanager.dto.TaskDto;
@@ -22,18 +22,11 @@ import java.util.stream.Collectors;
 
 
 @Service
+@RequiredArgsConstructor
 public class TaskServiceAdminImpl implements TaskService {
 
     private final ProjectRepository projectRepo;
     private final TaskRepository taskRepo;
-
-
-    @Autowired
-    public TaskServiceAdminImpl(ProjectRepository projectRepo, TaskRepository taskRepo) {
-        this.projectRepo = projectRepo;
-        this.taskRepo = taskRepo;
-    }
-
 
 
     @Transactional

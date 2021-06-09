@@ -1,7 +1,7 @@
 package shaswata.taskmanager.controller;
 
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,15 +16,11 @@ import shaswata.taskmanager.service.AuthenticationService;
 @CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
 @RestController
 @RequestMapping("/api/authentication")
+@RequiredArgsConstructor
 public class AuthenticationController{
 
 
     private final AuthenticationService authenticationService;
-
-    @Autowired
-    public AuthenticationController(AuthenticationService authenticationService) {
-        this.authenticationService = authenticationService;
-    }
 
 
     @GetMapping(value = "/hello")

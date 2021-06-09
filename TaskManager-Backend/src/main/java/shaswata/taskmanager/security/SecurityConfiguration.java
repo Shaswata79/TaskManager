@@ -1,5 +1,6 @@
 package shaswata.taskmanager.security;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,16 +18,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
+@RequiredArgsConstructor
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
 
     private final UserDetailsService userDetailsService;
     private final JwtRequestFilter jwtRequestFilter;
-
-    @Autowired
-    public SecurityConfiguration(UserDetailsService userDetailsService, JwtRequestFilter jwtRequestFilter) {
-        this.userDetailsService = userDetailsService;
-        this.jwtRequestFilter = jwtRequestFilter;
-    }
 
 
     @Autowired
@@ -39,7 +35,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
         httpS.csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/api/user/register",
-                        "/api/user/hello",
+                        "/api/authentication/hello",
                         "/api/authentication/login",
                         "/v2/api-docs",
                         "/swagger-ui.html",

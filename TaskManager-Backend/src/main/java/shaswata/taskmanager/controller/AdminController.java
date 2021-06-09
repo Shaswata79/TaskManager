@@ -1,7 +1,7 @@
 package shaswata.taskmanager.controller;
 
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,18 +17,11 @@ import java.util.List;
 @CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
 @RestController
 @RequestMapping("/api/admin")
+@RequiredArgsConstructor
 public class AdminController extends BaseController{
 
 
     private final AdminService adminService;
-
-
-    //Implementation best practice: Beans are not autowired separately. They are initialized in the constructor
-
-    @Autowired
-    public AdminController(AdminService adminService) {
-        this.adminService = adminService;
-    }
 
 
     @GetMapping("/projects_by_user")

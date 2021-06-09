@@ -1,6 +1,6 @@
 package shaswata.taskmanager.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -14,18 +14,12 @@ import shaswata.taskmanager.security.ApplicationUserRole;
 
 
 @Service
+@RequiredArgsConstructor
 public class MyUserDetailsService implements UserDetailsService {
 
 
     private final UserRepository userRepository;
     private final AdminRepository adminRepository;
-
-
-    @Autowired
-    public MyUserDetailsService(UserRepository userRepository, AdminRepository adminRepository) {
-        this.userRepository = userRepository;
-        this.adminRepository = adminRepository;
-    }
 
 
     @Override

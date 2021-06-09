@@ -1,5 +1,6 @@
 package shaswata.taskmanager.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import shaswata.taskmanager.dto.ProjectDto;
 import shaswata.taskmanager.dto.TaskDto;
@@ -16,14 +17,11 @@ import java.util.List;
 
 
 @Service
+@RequiredArgsConstructor
 public class AdminService {
     //Admin exclusive services
 
     private final UserRepository userRepo;
-
-    public AdminService(UserRepository userRepo) {
-        this.userRepo = userRepo;
-    }
 
 
     @Transactional

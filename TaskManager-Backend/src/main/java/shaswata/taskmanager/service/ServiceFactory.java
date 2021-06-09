@@ -1,7 +1,7 @@
 package shaswata.taskmanager.service;
 
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import shaswata.taskmanager.exception.ResourceNotFoundException;
@@ -13,6 +13,7 @@ import shaswata.taskmanager.service.impl.*;
 
 
 @Service
+@RequiredArgsConstructor
 public class ServiceFactory {
 
     private final UserRepository userRepo;
@@ -26,23 +27,6 @@ public class ServiceFactory {
     private final ProjectServiceUserImpl projectServiceUser;
     private final UserServiceAdminImpl userServiceAdmin;
     private final UserServiceUserImpl userServiceUser;
-
-
-    @Autowired
-    public ServiceFactory(UserRepository userRepo, AdminRepository adminRepo, TaskRepository taskRepo, ProjectRepository projectRepo, TaskServiceAdminImpl taskServiceAdmin, TaskServiceUserImpl taskServiceUser, ProjectServiceAdminImpl projectServiceAdmin, ProjectServiceUserImpl projectServiceUser, UserServiceAdminImpl userServiceAdmin, UserServiceUserImpl userServiceUser) {
-        this.userRepo = userRepo;
-        this.adminRepo = adminRepo;
-        this.taskRepo = taskRepo;
-        this.projectRepo = projectRepo;
-
-        this.taskServiceAdmin = taskServiceAdmin;
-        this.taskServiceUser = taskServiceUser;
-        this.projectServiceAdmin = projectServiceAdmin;
-        this.projectServiceUser = projectServiceUser;
-        this.userServiceAdmin = userServiceAdmin;
-        this.userServiceUser = userServiceUser;
-    }
-
 
 
     public TaskService getTaskService(UserDetails currentUser) throws Exception {

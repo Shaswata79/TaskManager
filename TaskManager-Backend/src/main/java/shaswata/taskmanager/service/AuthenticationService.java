@@ -1,7 +1,7 @@
 
 package shaswata.taskmanager.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,20 +14,13 @@ import shaswata.taskmanager.security.JwtUtil;
 import javax.transaction.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class AuthenticationService {
 
 
     private final MyUserDetailsService userDetailsService;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtTokenUtil;
-
-
-    @Autowired
-    public AuthenticationService(MyUserDetailsService userDetailsService, AuthenticationManager authenticationManager, JwtUtil jwtTokenUtil) {
-        this.userDetailsService = userDetailsService;
-        this.authenticationManager = authenticationManager;
-        this.jwtTokenUtil = jwtTokenUtil;
-    }
 
 
     @Transactional

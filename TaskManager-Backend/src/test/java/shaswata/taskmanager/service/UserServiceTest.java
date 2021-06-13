@@ -9,6 +9,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import shaswata.taskmanager.dto.UserDto;
 import shaswata.taskmanager.model.Project;
 import shaswata.taskmanager.model.Task;
@@ -37,6 +38,8 @@ public class UserServiceTest {
     TaskRepository taskRepo;
     @Mock
     ProjectRepository projectRepo;
+    @Mock
+    PasswordEncoder passwordEncoder;
 
     @InjectMocks
     UserServiceUserImpl userService;
@@ -47,6 +50,9 @@ public class UserServiceTest {
     private static final String USER_NAME = "ABCD";
     private static final String USER_EMAIL = "someone@gmail.com";
     private static final String USER_PASSWORD = "fSHBlfsuesefd";
+
+    private static final String PASSWORD = "password123456";
+
 
     private static final String USER2_NAME = "EFGH";
     private static final String USER2_EMAIL = "someone123@gmail.com";
@@ -158,6 +164,12 @@ public class UserServiceTest {
 
         });
 
+
+        lenient().when(passwordEncoder.encode(PASSWORD)).thenAnswer((InvocationOnMock invocation) -> {
+            return PASSWORD;
+        });
+
+
         lenient().when(projectRepo.findProjectByName(anyString())).thenAnswer((InvocationOnMock invocation) -> {
             if (invocation.getArgument(0).equals(PROJECT_NAME)) {
                 PROJECT.setName(PROJECT_NAME);
@@ -189,7 +201,7 @@ public class UserServiceTest {
 
         String userName = "ABCD";
         String userEmail = "somebody@gmail.com";
-        String userPassword = "fSHBlfsuesefd";
+        String userPassword = PASSWORD;
 
         UserDto user = new UserDto();
         user.setPassword(userPassword);
@@ -206,6 +218,7 @@ public class UserServiceTest {
         assertNotNull(user);
         assertEquals(userName, user.getName());
         assertEquals(userEmail, user.getEmail());
+        assertEquals(PASSWORD, user.getPassword());
 
     }
 

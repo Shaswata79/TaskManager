@@ -8,11 +8,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import shaswata.taskmanager.dto.TaskDto;
 import shaswata.taskmanager.service.ServiceFactory;
-import shaswata.taskmanager.service.TaskService;
+import shaswata.taskmanager.service.task.TaskService;
 
 import java.util.List;
 
-@CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
+//@CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
 @RestController
 @RequestMapping("/api/task")
 @RequiredArgsConstructor

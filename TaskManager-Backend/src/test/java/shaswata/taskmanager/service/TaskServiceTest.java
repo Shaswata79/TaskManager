@@ -19,8 +19,8 @@ import shaswata.taskmanager.repository.ProjectRepository;
 import shaswata.taskmanager.repository.TaskRepository;
 import shaswata.taskmanager.repository.UserRepository;
 import shaswata.taskmanager.security.ApplicationUserRole;
-import shaswata.taskmanager.service.impl.TaskServiceAdminImpl;
-import shaswata.taskmanager.service.impl.TaskServiceUserImpl;
+import shaswata.taskmanager.service.task.TaskServiceAdminImpl;
+import shaswata.taskmanager.service.task.TaskServiceUserImpl;
 
 import java.sql.Date;
 import java.util.ArrayList;

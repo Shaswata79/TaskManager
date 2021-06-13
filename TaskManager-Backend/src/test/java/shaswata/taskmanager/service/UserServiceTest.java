@@ -18,8 +18,8 @@ import shaswata.taskmanager.repository.ProjectRepository;
 import shaswata.taskmanager.repository.TaskRepository;
 import shaswata.taskmanager.repository.UserRepository;
 import shaswata.taskmanager.security.ApplicationUserRole;
-import shaswata.taskmanager.service.impl.UserServiceAdminImpl;
-import shaswata.taskmanager.service.impl.UserServiceUserImpl;
+import shaswata.taskmanager.service.user.UserServiceAdminImpl;
+import shaswata.taskmanager.service.user.UserServiceUserImpl;
 
 import java.util.ArrayList;
 import java.util.List;

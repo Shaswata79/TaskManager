@@ -1,8 +1,9 @@
-package shaswata.taskmanager.service.impl;
+package shaswata.taskmanager.service.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import shaswata.taskmanager.dto.UserDto;
 import shaswata.taskmanager.exception.DuplicateEntityException;
@@ -14,7 +15,6 @@ import shaswata.taskmanager.model.UserAccount;
 import shaswata.taskmanager.repository.ProjectRepository;
 import shaswata.taskmanager.repository.TaskRepository;
 import shaswata.taskmanager.repository.UserRepository;
-import shaswata.taskmanager.service.UserService;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
@@ -28,6 +28,7 @@ public class UserServiceUserImpl implements UserService {
     private final UserRepository userRepo;
     private final TaskRepository taskRepo;
     private final ProjectRepository projectRepo;
+    private final PasswordEncoder passwordEncoder;
 
 
     @Transactional
@@ -47,7 +48,7 @@ public class UserServiceUserImpl implements UserService {
         UserAccount user = new UserAccount();
         user.setName(dto.getName());
         user.setEmail(dto.getEmail());
-        user.setPassword(dto.getPassword());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
 
         List<Task> taskList = new ArrayList<>();
         List<Project> projectList = new ArrayList<>();

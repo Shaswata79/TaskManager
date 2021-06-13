@@ -1,4 +1,4 @@
-package shaswata.taskmanager.service;
+package shaswata.taskmanager.service.admin;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -10,32 +10,30 @@ import shaswata.taskmanager.model.Project;
 import shaswata.taskmanager.model.Task;
 import shaswata.taskmanager.model.UserAccount;
 import shaswata.taskmanager.repository.UserRepository;
+import shaswata.taskmanager.service.project.ProjectService;
+import shaswata.taskmanager.service.task.TaskService;
+import shaswata.taskmanager.service.user.UserService;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
 @RequiredArgsConstructor
-public class AdminService {
+public class AdminServiceImpl implements AdminService {
     //Admin exclusive services
 
-    private final UserRepository userRepo;
 
+    private final UserRepository userRepo;
 
     @Transactional
     public List<UserDto> getAllUsers(){
         List<UserAccount> users = userRepo.findAll();
-        List<UserDto> userDtos = new ArrayList<>();
-
-        for(UserAccount user : users){
-            userDtos.add(UserService.userToDTO(user));
-        }
+        List<UserDto> userDtos = users.stream().map(UserService::userToDTO).collect(Collectors.toList());
 
         return userDtos;
     }
-
 
 
     @Transactional
@@ -49,16 +47,11 @@ public class AdminService {
         }
 
         List<Task> userTasks = user.getTasks();
-        List<TaskDto> taskDtoList = new ArrayList<>();
-
-        for(Task task : userTasks){
-            taskDtoList.add(TaskService.taskToDTO(task));
-        }
+        List<TaskDto> taskDtoList = userTasks.stream().map(TaskService::taskToDTO).collect(Collectors.toList());
 
         return taskDtoList;
 
     }
-
 
 
     @Transactional
@@ -72,13 +65,11 @@ public class AdminService {
         }
 
         List<Project> userProjects = user.getProjects();
-        List<ProjectDto> projectDtoList = new ArrayList<>();
-
-        for(Project project : userProjects){
-            projectDtoList.add(ProjectService.projectToDTO(project));
-        }
+        List<ProjectDto> projectDtoList = userProjects.stream().map(ProjectService::projectToDTO).collect(Collectors.toList());
 
         return projectDtoList;
 
     }
+
+
 }

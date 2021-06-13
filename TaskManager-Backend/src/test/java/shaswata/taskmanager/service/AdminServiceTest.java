@@ -17,6 +17,7 @@ import shaswata.taskmanager.model.UserAccount;
 import shaswata.taskmanager.repository.ProjectRepository;
 import shaswata.taskmanager.repository.TaskRepository;
 import shaswata.taskmanager.repository.UserRepository;
+import shaswata.taskmanager.service.admin.AdminServiceImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +40,7 @@ public class AdminServiceTest {
     UserRepository userRepo;
 
     @InjectMocks
-    AdminService adminService;
+    AdminServiceImpl adminService;
 
 
     private static final String USER_NAME = "ABCD";

@@ -7,13 +7,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import shaswata.taskmanager.dto.ProjectDto;
-import shaswata.taskmanager.service.ProjectService;
+import shaswata.taskmanager.service.project.ProjectService;
 import shaswata.taskmanager.service.ServiceFactory;
 
 import java.util.List;
 
 
-@CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
+//@CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
 @RestController
 @RequestMapping("/api/project")
 @RequiredArgsConstructor

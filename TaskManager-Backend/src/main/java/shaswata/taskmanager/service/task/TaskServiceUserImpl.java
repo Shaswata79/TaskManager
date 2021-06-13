@@ -1,4 +1,4 @@
-package shaswata.taskmanager.service.impl;
+package shaswata.taskmanager.service.task;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -15,7 +15,6 @@ import shaswata.taskmanager.model.UserAccount;
 import shaswata.taskmanager.repository.ProjectRepository;
 import shaswata.taskmanager.repository.TaskRepository;
 import shaswata.taskmanager.repository.UserRepository;
-import shaswata.taskmanager.service.TaskService;
 
 import javax.transaction.Transactional;
 import java.sql.Date;
@@ -127,11 +126,7 @@ public class TaskServiceUserImpl implements TaskService {
     public List<TaskDto> getAllTasks(UserDetails currentUser){
         UserAccount user = userRepo.findUserAccountByEmail(currentUser.getUsername());
         List<Task> taskList = user.getTasks();
-        List<TaskDto> taskDtoList = new ArrayList<>();
-
-        for (Task task : taskList){
-            taskDtoList.add(TaskService.taskToDTO(task));
-        }
+        List<TaskDto> taskDtoList = taskList.stream().map(TaskService::taskToDTO).collect(Collectors.toList());
 
         return taskDtoList;
     }
@@ -154,10 +149,7 @@ public class TaskServiceUserImpl implements TaskService {
         }
 
         List<Task> taskList = taskRepo.findTaskByProject(project);
-        List<TaskDto> taskDtoList = new ArrayList<>();
-        for(Task task : taskList){
-            taskDtoList.add(TaskService.taskToDTO(task));
-        }
+        List<TaskDto> taskDtoList = taskList.stream().map(TaskService::taskToDTO).collect(Collectors.toList());
 
         return taskDtoList;
     }

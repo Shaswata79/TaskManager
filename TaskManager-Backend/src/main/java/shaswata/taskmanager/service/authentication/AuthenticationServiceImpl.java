@@ -1,5 +1,4 @@
-
-package shaswata.taskmanager.service;
+package shaswata.taskmanager.service.authentication;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -10,13 +9,14 @@ import org.springframework.stereotype.Service;
 import shaswata.taskmanager.dto.AuthenticationRequest;
 import shaswata.taskmanager.dto.AuthenticationResponse;
 import shaswata.taskmanager.security.JwtUtil;
+import shaswata.taskmanager.service.MyUserDetailsService;
 
 import javax.transaction.Transactional;
 
+
 @Service
 @RequiredArgsConstructor
-public class AuthenticationService {
-
+public class AuthenticationServiceImpl implements AuthenticationService {
 
     private final MyUserDetailsService userDetailsService;
     private final AuthenticationManager authenticationManager;
@@ -40,10 +40,4 @@ public class AuthenticationService {
 
     }
 
-
-
-
 }
-
-
-

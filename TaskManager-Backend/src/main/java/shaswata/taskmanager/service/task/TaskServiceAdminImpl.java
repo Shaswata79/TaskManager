@@ -1,4 +1,4 @@
-package shaswata.taskmanager.service.impl;
+package shaswata.taskmanager.service.task;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,7 +12,6 @@ import shaswata.taskmanager.model.Task;
 import shaswata.taskmanager.model.TaskStatus;
 import shaswata.taskmanager.repository.ProjectRepository;
 import shaswata.taskmanager.repository.TaskRepository;
-import shaswata.taskmanager.service.TaskService;
 
 import javax.transaction.Transactional;
 import java.sql.Date;
@@ -108,11 +107,7 @@ public class TaskServiceAdminImpl implements TaskService {
     @Override
     public List<TaskDto> getAllTasks(UserDetails currentUser){
         List<Task> taskList = taskRepo.findAll();
-        List<TaskDto> taskDtoList = new ArrayList<>();
-
-        for (Task task : taskList){
-            taskDtoList.add(TaskService.taskToDTO(task));
-        }
+        List<TaskDto> taskDtoList = taskList.stream().map(TaskService::taskToDTO).collect(Collectors.toList());
 
         return taskDtoList;
     }
@@ -132,11 +127,7 @@ public class TaskServiceAdminImpl implements TaskService {
         }
 
         List<Task> taskList = taskRepo.findTaskByProject(project);
-        List<TaskDto> taskDtoList = new ArrayList<>();
-        for(Task task : taskList){
-            taskDtoList.add(TaskService.taskToDTO(task));
-        }
-
+        List<TaskDto> taskDtoList = taskList.stream().map(TaskService::taskToDTO).collect(Collectors.toList());
         return taskDtoList;
     }
 
@@ -164,11 +155,7 @@ public class TaskServiceAdminImpl implements TaskService {
         }
 
         List<Task> taskList = taskRepo.findTaskByStatus(taskStatus);
-        List<TaskDto> taskDtoList = new ArrayList<>();
-        for(Task task : taskList){
-            taskDtoList.add(TaskService.taskToDTO(task));
-        }
-
+        List<TaskDto> taskDtoList = taskList.stream().map(TaskService::taskToDTO).collect(Collectors.toList());
         return taskDtoList;
     }
 

@@ -9,11 +9,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import shaswata.taskmanager.dto.UserDto;
 import shaswata.taskmanager.service.ServiceFactory;
-import shaswata.taskmanager.service.UserService;
-import shaswata.taskmanager.service.impl.UserServiceUserImpl;
+import shaswata.taskmanager.service.user.UserService;
+import shaswata.taskmanager.service.user.UserServiceUserImpl;
 
 
-@CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
+//@CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
@@ -27,8 +27,7 @@ public class UserController extends BaseController{
     @PostMapping("/register")
     public ResponseEntity<?> createUser(@RequestBody UserDto userDto) throws Exception {    //TODO: remove redundancy if possible
 
-        UserDetails userDetails = super.getCurrentUser();
-        userService = serviceFactory.getUserService(userDetails);
+        userService = serviceFactory.getUserServiceUser();
         userDto = userService.createUser(userDto);
         return new ResponseEntity<>(userDto, HttpStatus.OK);
 

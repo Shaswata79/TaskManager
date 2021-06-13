@@ -8,19 +8,21 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import shaswata.taskmanager.dto.AuthenticationRequest;
 import shaswata.taskmanager.dto.AuthenticationResponse;
-import shaswata.taskmanager.service.AuthenticationService;
+import shaswata.taskmanager.service.ServiceFactory;
+import shaswata.taskmanager.service.authentication.AuthenticationService;
 
 
 
 
-@CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
+//@CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
 @RestController
 @RequestMapping("/api/authentication")
 @RequiredArgsConstructor
 public class AuthenticationController{
 
 
-    private final AuthenticationService authenticationService;
+    private AuthenticationService authenticationService;
+    private final ServiceFactory serviceFactory;
 
 
     @GetMapping(value = "/hello")
@@ -32,12 +34,15 @@ public class AuthenticationController{
     @PostMapping("/login")
     public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) throws Exception{
 
+        authenticationService = serviceFactory.getAuthenticationService();
         AuthenticationResponse authenticationResponse = authenticationService.login(authenticationRequest);
         return ResponseEntity.ok(authenticationResponse);
 
     }
 
 
+
+    /*
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {
@@ -51,7 +56,7 @@ public class AuthenticationController{
     }
 
 
-
+    */
 
 
 }

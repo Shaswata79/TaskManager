@@ -1,6 +1,7 @@
-package shaswata.taskmanager.service.impl;
+package shaswata.taskmanager.service.project;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import shaswata.taskmanager.dto.ProjectDto;
@@ -14,15 +15,15 @@ import shaswata.taskmanager.model.UserAccount;
 import shaswata.taskmanager.repository.ProjectRepository;
 import shaswata.taskmanager.repository.TaskRepository;
 import shaswata.taskmanager.repository.UserRepository;
-import shaswata.taskmanager.service.ProjectService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
 @RequiredArgsConstructor
-public class ProjectServiceAdminImpl implements ProjectService {
+public class ProjectServiceUserImpl implements ProjectService {
 
     private final ProjectRepository projectRepo;
     private final TaskRepository taskRepo;
@@ -60,23 +61,29 @@ public class ProjectServiceAdminImpl implements ProjectService {
             project = projectRepo.save(project);
         }
 
+        //assign current user to project
+        UserAccount user = userRepo.findUserAccountByEmail(currentUser.getUsername());
+        List<Project> userProjectList = user.getProjects();
+        userProjectList.add(project);
+        user.setProjects(userProjectList);
+        userRepo.save(user);
+
         return ProjectService.projectToDTO(project);
     }
 
 
-
     @Override
     public List<ProjectDto> getAllProjects(UserDetails currentUser) throws Exception {
-        List<Project> projectList = projectRepo.findAll();
-        List<ProjectDto> projectDtoList = new ArrayList<>();
+        UserAccount user = userRepo.findUserAccountByEmail(currentUser.getUsername());
+        List<Project> projectList = user.getProjects();
 
-        for(Project project : projectList){
-            projectDtoList.add(ProjectService.projectToDTO(project));
+        if(projectList == null){
+            return null;
         }
 
+        List<ProjectDto> projectDtoList = projectList.stream().map(ProjectService::projectToDTO).collect(Collectors.toList());
         return projectDtoList;
     }
-
 
 
 
@@ -85,18 +92,29 @@ public class ProjectServiceAdminImpl implements ProjectService {
         if(name == null || name == ""){
             throw new InvalidInputException("Project name cannot be empty!");
         }
+
+        UserAccount user = userRepo.findUserAccountByEmail(currentUser.getUsername());
+        List<Project> userProjectList = user.getProjects();
         Project project = projectRepo.findProjectByName(name);
-        if(project == null){
+
+        if((project == null) || (userProjectList == null)){
             throw new ResourceNotFoundException("Project '" + name + "' not found!");
         }
 
-        for(UserAccount user : userRepo.findAll()){
-            if(user.getProjects().contains(project)){
-                user.getProjects().remove(project);
-                userRepo.save(user);
+        if(userProjectList.contains(project)){
+
+            for(UserAccount thisUser : userRepo.findAll()){
+                if(user.getProjects().contains(project)){
+                    thisUser.getProjects().remove(project);
+                    userRepo.save(thisUser);
+                }
             }
+            projectRepo.deleteProjectByName(name);
+
+        } else{
+            throw new AccessDeniedException("User can only delete own projects");
         }
-        projectRepo.deleteProjectByName(name);
+
         return "Project '" + name + "' was deleted.";
     }
 }

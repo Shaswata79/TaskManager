@@ -1,4 +1,4 @@
-package shaswata.taskmanager.service;
+package shaswata.taskmanager.service.project;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -6,6 +6,7 @@ import shaswata.taskmanager.dto.ProjectDto;
 import shaswata.taskmanager.dto.TaskDto;
 import shaswata.taskmanager.model.Project;
 import shaswata.taskmanager.model.Task;
+import shaswata.taskmanager.service.task.TaskService;
 
 import java.util.ArrayList;
 import java.util.List;

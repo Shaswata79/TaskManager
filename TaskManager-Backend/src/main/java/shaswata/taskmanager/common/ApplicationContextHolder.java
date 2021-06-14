@@ -1,4 +1,4 @@
-package shaswata.taskmanager;
+package shaswata.taskmanager.common;
 
 
 import org.springframework.beans.BeansException;

@@ -1,20 +1,26 @@
 package shaswata.taskmanager.service.admin;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import shaswata.taskmanager.dto.AdminDto;
 import shaswata.taskmanager.dto.ProjectDto;
 import shaswata.taskmanager.dto.TaskDto;
 import shaswata.taskmanager.dto.UserDto;
+import shaswata.taskmanager.exception.DuplicateEntityException;
 import shaswata.taskmanager.exception.InvalidInputException;
+import shaswata.taskmanager.model.AdminAccount;
 import shaswata.taskmanager.model.Project;
 import shaswata.taskmanager.model.Task;
 import shaswata.taskmanager.model.UserAccount;
+import shaswata.taskmanager.repository.AdminRepository;
 import shaswata.taskmanager.repository.UserRepository;
 import shaswata.taskmanager.service.project.ProjectService;
 import shaswata.taskmanager.service.task.TaskService;
 import shaswata.taskmanager.service.user.UserService;
 
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +32,11 @@ public class AdminServiceImpl implements AdminService {
 
 
     private final UserRepository userRepo;
+    private final AdminRepository adminRepo;
+    private final PasswordEncoder passwordEncoder;
+
+
+
 
     @Transactional
     public List<UserDto> getAllUsers(){
@@ -69,6 +80,30 @@ public class AdminServiceImpl implements AdminService {
 
         return projectDtoList;
 
+    }
+
+
+
+    @Override
+    public AdminDto createAdmin(AdminDto dto) throws Exception {
+        if(dto.getName() == null || dto.getName() == ""){
+            throw new InvalidInputException("Name cannot be empty!");
+        }
+        if(dto.getEmail() == null || dto.getEmail() == "" || dto.getPassword() == null || dto.getPassword() == ""){
+            throw new InvalidInputException("Email or password cannot be empty!");
+        }
+
+        if(adminRepo.findAdminAccountByEmail(dto.getEmail()) != null){
+            throw new DuplicateEntityException("Account with email '" + dto.getEmail() + "' already exists.");
+        }
+
+        AdminAccount admin = new AdminAccount();
+        admin.setName(dto.getName());
+        admin.setEmail(dto.getEmail());
+        admin.setPassword(passwordEncoder.encode(dto.getPassword()));
+
+        adminRepo.save(admin);
+        return AdminService.adminToDTO(admin);
     }
 
 

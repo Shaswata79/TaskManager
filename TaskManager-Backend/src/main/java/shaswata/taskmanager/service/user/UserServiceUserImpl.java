@@ -85,12 +85,14 @@ public class UserServiceUserImpl implements UserService {
         }
 
         List<Task> userTaskList = user.getTasks();
+        if(userTaskList.contains(task)){
+            throw new DuplicateEntityException("User is already assigned this task");
+        }
         List<Project> userProjectList = user.getProjects();
         userTaskList.add(task);
-        user.setTasks(userTaskList);
+
         if(!userProjectList.contains(task.getProject())){
             userProjectList.add(task.getProject());
-            user.setProjects(userProjectList);
         }
         userRepo.save(user);
         return "User " + email + " assigned to task '" + task.getDescription() + "' in project '" + task.getProject().getName() + "'.";

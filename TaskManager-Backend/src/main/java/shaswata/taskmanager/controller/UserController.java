@@ -25,7 +25,7 @@ public class UserController extends BaseController{
 
 
     @PostMapping("/register")
-    public ResponseEntity<?> createUser(@RequestBody UserDto userDto) throws Exception {    //TODO: remove redundancy if possible
+    public ResponseEntity<?> createUser(@RequestBody UserDto userDto) throws Exception {
 
         userService = serviceFactory.getUserServiceUser();
         userDto = userService.createUser(userDto);
@@ -36,7 +36,7 @@ public class UserController extends BaseController{
 
     @PutMapping("/change_password")
     @PreAuthorize("hasRole('ROLE_USER')")
-    public ResponseEntity<?> changePassword(@RequestParam("newPassword") String newPassword) throws Exception {     //TODO
+    public ResponseEntity<?> changePassword(@RequestParam("newPassword") String newPassword) throws Exception {
 
         UserDetails userDetails = super.getCurrentUser();
         UserServiceUserImpl userServiceUser = serviceFactory.getUserServiceUser();

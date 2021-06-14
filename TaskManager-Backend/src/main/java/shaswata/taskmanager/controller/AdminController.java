@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import shaswata.taskmanager.dto.AdminDto;
 import shaswata.taskmanager.dto.ProjectDto;
 import shaswata.taskmanager.dto.TaskDto;
 import shaswata.taskmanager.dto.UserDto;
@@ -54,6 +55,17 @@ public class AdminController extends BaseController{
         adminService = serviceFactory.getAdminService();
         List<UserDto> userList = adminService.getAllUsers();
         return new ResponseEntity<>(userList, HttpStatus.OK);
+
+    }
+
+
+    @PostMapping("/create")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> createAdmin(@RequestBody AdminDto adminDto) throws Exception{
+
+        adminService = serviceFactory.getAdminService();
+        adminDto = adminService.createAdmin(adminDto);
+        return new ResponseEntity<>(adminDto, HttpStatus.OK);
 
     }
 

@@ -10,7 +10,7 @@ import shaswata.taskmanager.model.AdminAccount;
 import shaswata.taskmanager.model.UserAccount;
 import shaswata.taskmanager.repository.AdminRepository;
 import shaswata.taskmanager.repository.UserRepository;
-import shaswata.taskmanager.security.ApplicationUserRole;
+import shaswata.taskmanager.common.ApplicationUserRole;
 
 
 @Service
@@ -33,7 +33,7 @@ public class MyUserDetailsService implements UserDetailsService {
             UserDetails currentAdmin = User.builder()
                     .username(admin.getEmail())
                     .password(admin.getPassword())
-                    .roles(ApplicationUserRole.ADMIN.name())
+                    .roles(ApplicationUserRole.ADMIN.name(), ApplicationUserRole.USER.name())
                     .build();
             return currentAdmin;
 

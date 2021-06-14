@@ -21,7 +21,7 @@ import shaswata.taskmanager.model.UserAccount;
 import shaswata.taskmanager.repository.ProjectRepository;
 import shaswata.taskmanager.repository.TaskRepository;
 import shaswata.taskmanager.repository.UserRepository;
-import shaswata.taskmanager.security.ApplicationUserRole;
+import shaswata.taskmanager.common.ApplicationUserRole;
 import shaswata.taskmanager.service.project.ProjectServiceAdminImpl;
 import shaswata.taskmanager.service.project.ProjectServiceUserImpl;
 

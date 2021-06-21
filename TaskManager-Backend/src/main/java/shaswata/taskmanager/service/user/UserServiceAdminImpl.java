@@ -32,6 +32,7 @@ public class UserServiceAdminImpl implements UserService {
 
 
     @Transactional
+    @Override
     public UserDto createUser(UserDto dto) throws Exception {
         if(dto.getName() == null || dto.getName() == ""){
             throw new InvalidInputException("Name cannot be empty!");
@@ -62,6 +63,7 @@ public class UserServiceAdminImpl implements UserService {
 
 
     @Transactional
+    @Override
     public String assignUserToTask(String email, Long id, UserDetails currentUser) throws Exception {
         if(email == null || email == ""){
             throw new InvalidInputException("Email cannot be empty!");
@@ -96,6 +98,7 @@ public class UserServiceAdminImpl implements UserService {
 
 
     @Transactional
+    @Override
     public String assignUserToProject(String email, String projectName, UserDetails currentUser) throws Exception {
         if(email == null || email == ""){
             throw new InvalidInputException("Email cannot be empty!");
@@ -129,6 +132,7 @@ public class UserServiceAdminImpl implements UserService {
 
 
     @Transactional
+    @Override
     public UserDto getUser(String email, UserDetails currentUser) throws Exception {
         if(email == null || email == ""){
             throw new InvalidInputException("User email cannot be empty!");

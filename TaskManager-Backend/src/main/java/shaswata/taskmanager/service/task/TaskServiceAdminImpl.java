@@ -76,12 +76,18 @@ public class TaskServiceAdminImpl implements TaskService {
             throw new Exception("Task has already been closed so it cannot be updated");
         }
 
-        //Note : Task's project cannot be changed
-        task.setDescription(taskDto.getDescription());
-        task.setStatus(taskDto.getStatus());
-        task.setDueDate(taskDto.getDueDate());
-        task = taskRepo.save(task);
+        //Note : Task's id and project cannot be changed
+        if(taskDto.getDescription() != null && taskDto.getDescription() != ""){
+            task.setDescription(taskDto.getDescription());
+        }
+        if(taskDto.getStatus() != null){
+            task.setStatus(taskDto.getStatus());
+        }
+        if(taskDto.getDueDate() != null){
+            task.setDueDate(taskDto.getDueDate());
+        }
 
+        task = taskRepo.save(task);
         return TaskService.taskToDTO(task);
     }
 
@@ -107,7 +113,9 @@ public class TaskServiceAdminImpl implements TaskService {
     @Override
     public List<TaskDto> getAllTasks(UserDetails currentUser){
         List<Task> taskList = taskRepo.findAll();
-        List<TaskDto> taskDtoList = taskList.stream().map(TaskService::taskToDTO).collect(Collectors.toList());
+        List<TaskDto> taskDtoList = taskList.stream()
+                                                .map(TaskService::taskToDTO)
+                                                .collect(Collectors.toList());
 
         return taskDtoList;
     }
@@ -127,7 +135,9 @@ public class TaskServiceAdminImpl implements TaskService {
         }
 
         List<Task> taskList = taskRepo.findTaskByProject(project);
-        List<TaskDto> taskDtoList = taskList.stream().map(TaskService::taskToDTO).collect(Collectors.toList());
+        List<TaskDto> taskDtoList = taskList.stream()
+                                                .map(TaskService::taskToDTO)
+                                                .collect(Collectors.toList());
         return taskDtoList;
     }
 
@@ -155,7 +165,9 @@ public class TaskServiceAdminImpl implements TaskService {
         }
 
         List<Task> taskList = taskRepo.findTaskByStatus(taskStatus);
-        List<TaskDto> taskDtoList = taskList.stream().map(TaskService::taskToDTO).collect(Collectors.toList());
+        List<TaskDto> taskDtoList = taskList.stream()
+                                                .map(TaskService::taskToDTO)
+                                                .collect(Collectors.toList());
         return taskDtoList;
     }
 
@@ -169,15 +181,10 @@ public class TaskServiceAdminImpl implements TaskService {
         Date currentDate = new Date(millis);
 
         List<Task> taskList = taskRepo.findAll();
-        List<TaskDto> expiredTasks = new ArrayList<>();
-
-        for(Task task : taskList){
-            if(task.getDueDate() != null){
-                if(task.getDueDate().before(currentDate)){
-                    expiredTasks.add(TaskService.taskToDTO(task));
-                }
-            }
-        }
+        List<TaskDto> expiredTasks = taskList.stream()
+                                                .filter(task -> (task.getDueDate() != null && task.getDueDate().before(currentDate)))
+                                                .map(TaskService::taskToDTO)
+                                                .collect(Collectors.toList());
 
         return expiredTasks;
     }

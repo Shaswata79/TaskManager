@@ -13,7 +13,7 @@ import shaswata.taskmanager.service.ServiceFactory;
 import java.util.List;
 
 
-//@CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
+@CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
 @RestController
 @RequestMapping("/api/project")
 @RequiredArgsConstructor

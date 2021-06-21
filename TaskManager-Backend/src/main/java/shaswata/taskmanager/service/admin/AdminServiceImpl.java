@@ -41,7 +41,9 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     public List<UserDto> getAllUsers(){
         List<UserAccount> users = userRepo.findAll();
-        List<UserDto> userDtos = users.stream().map(UserService::userToDTO).collect(Collectors.toList());
+        List<UserDto> userDtos = users.stream()
+                                        .map(UserService::userToDTO)
+                                        .collect(Collectors.toList());
 
         return userDtos;
     }
@@ -58,7 +60,9 @@ public class AdminServiceImpl implements AdminService {
         }
 
         List<Task> userTasks = user.getTasks();
-        List<TaskDto> taskDtoList = userTasks.stream().map(TaskService::taskToDTO).collect(Collectors.toList());
+        List<TaskDto> taskDtoList = userTasks.stream()
+                                                .map(TaskService::taskToDTO)
+                                                .collect(Collectors.toList());
 
         return taskDtoList;
 
@@ -76,7 +80,9 @@ public class AdminServiceImpl implements AdminService {
         }
 
         List<Project> userProjects = user.getProjects();
-        List<ProjectDto> projectDtoList = userProjects.stream().map(ProjectService::projectToDTO).collect(Collectors.toList());
+        List<ProjectDto> projectDtoList = userProjects.stream()
+                                                        .map(ProjectService::projectToDTO)
+                                                        .collect(Collectors.toList());
 
         return projectDtoList;
 

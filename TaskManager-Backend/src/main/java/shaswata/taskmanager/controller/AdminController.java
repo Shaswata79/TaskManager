@@ -16,7 +16,7 @@ import shaswata.taskmanager.service.ServiceFactory;
 import java.util.List;
 
 
-//@CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
+@CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
@@ -28,7 +28,7 @@ public class AdminController extends BaseController{
 
     @GetMapping("/projects_by_user")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> getProjectsByUser(@RequestParam("email") String email) throws Exception {
+    public ResponseEntity<?> getProjectsByUser(@RequestHeader("email") String email) throws Exception {
 
         adminService = serviceFactory.getAdminService();
         List<ProjectDto> userProjectList = adminService.getProjectsByUser(email);
@@ -39,7 +39,7 @@ public class AdminController extends BaseController{
 
     @GetMapping("/tasks_by_user")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> getTasksByUser(@RequestParam("email") String email) throws Exception{
+    public ResponseEntity<?> getTasksByUser(@RequestHeader("email") String email) throws Exception{
 
         adminService = serviceFactory.getAdminService();
         List<TaskDto> userTaskList = adminService.getTasksByUser(email);
@@ -49,7 +49,6 @@ public class AdminController extends BaseController{
 
 
     @GetMapping("/all_users")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> getAllUsers(){
 
         adminService = serviceFactory.getAdminService();

@@ -185,7 +185,7 @@ public class ProjectAndTaskRepositoryTest {
         //delete a task
         List<Task> newTaskList = project.getTasks();
         newTaskList.remove(task2);      //for a task to be successfully removed all its references must be removed
-        project.setTasks(newTaskList);
+        //project.setTasks(newTaskList);
         taskRepo.deleteById(task2ID);
         task2 = taskRepo.findTaskById(task2ID);
         assertNull(task2);

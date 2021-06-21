@@ -3,8 +3,9 @@ var path = require('path')
 
 module.exports = {
   build: {
+    port: 8089,
     env: require('./prod.env'),
-    //host: ' https://lit-fortress-63303.herokuapp.com',
+    //host: 'repairshop-backend-ecse321-09.herokuapp.com',
     port: 5432,
     backendHost: 'https://taskmanager-backend-79.herokuapp.com/',
     backendPort: 5432,
@@ -30,7 +31,7 @@ module.exports = {
     host: '127.0.0.1',
     port: 8089,
     backendHost: '127.0.0.1',
-    backendPort: 8080,
+    backendPort: 8089,
     autoOpenBrowser: true,
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',

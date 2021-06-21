@@ -15,8 +15,10 @@ import shaswata.taskmanager.repository.ProjectRepository;
 import shaswata.taskmanager.repository.TaskRepository;
 import shaswata.taskmanager.repository.UserRepository;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 
@@ -29,6 +31,7 @@ public class ProjectServiceAdminImpl implements ProjectService {
     private final UserRepository userRepo;
 
 
+    @Transactional
     @Override
     public ProjectDto createProject(ProjectDto dto, UserDetails currentUser) throws Exception {
         if(dto.getName() == null || dto.getName() == ""){
@@ -64,18 +67,20 @@ public class ProjectServiceAdminImpl implements ProjectService {
     }
 
 
-
+    @Transactional
     @Override
     public List<ProjectDto> getAllProjects(UserDetails currentUser) throws Exception {
         List<Project> projectList = projectRepo.findAll();
-        List<ProjectDto> projectDtoList = projectList.stream().map(ProjectService::projectToDTO).collect(Collectors.toList());
+        List<ProjectDto> projectDtoList = projectList.stream()
+                                                        .map(ProjectService::projectToDTO)
+                                                        .collect(Collectors.toList());
 
         return projectDtoList;
     }
 
 
 
-
+    @Transactional
     @Override
     public String deleteProject(String name, UserDetails currentUser) throws Exception {
         if(name == null || name == ""){
@@ -86,13 +91,42 @@ public class ProjectServiceAdminImpl implements ProjectService {
             throw new ResourceNotFoundException("Project '" + name + "' not found!");
         }
 
-        for(UserAccount user : userRepo.findAll()){
-            if(user.getProjects().contains(project)){
-                user.getProjects().remove(project);
-                userRepo.save(user);
-            }
+        //first remove the tasks from users
+        for(Task task : project.getTasks()){
+            deleteUserTasks(task);
         }
+
+        //then remove the project from users
+        deleteUserProjects(project);
+
+        //finally delete the project from repo
         projectRepo.deleteProjectByName(name);
         return "Project '" + name + "' was deleted.";
     }
+
+
+    private void deleteUserTasks(Task task){
+        for(UserAccount user : userRepo.findAll()){
+            List<Task> userTaskList = user.getTasks();
+            if(userTaskList.contains(task)){
+                userTaskList.remove(task);
+            }
+            user.setTasks(userTaskList);
+            userRepo.save(user);
+        }
+    }
+
+    private void deleteUserProjects(Project project){
+        for(UserAccount user : userRepo.findAll()){
+            List<Project> userProjectList = user.getProjects();
+            if(userProjectList.contains(project)){
+                userProjectList.remove(project);
+            }
+            user.setProjects(userProjectList);
+            userRepo.save(user);
+        }
+    }
+
+
+
 }

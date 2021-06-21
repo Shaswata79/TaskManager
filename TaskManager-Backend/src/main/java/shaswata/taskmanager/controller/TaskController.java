@@ -12,7 +12,7 @@ import shaswata.taskmanager.service.task.TaskService;
 
 import java.util.List;
 
-//@CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
+@CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
 @RestController
 @RequestMapping("/api/task")
 @RequiredArgsConstructor
@@ -62,6 +62,7 @@ public class TaskController extends BaseController{
     @GetMapping("/all")
     public ResponseEntity<?> getAllTasks() throws Exception {
 
+        System.out.println("Here");
         UserDetails userDetails = super.getCurrentUser();
         taskService = serviceFactory.getTaskService(userDetails);
         List<TaskDto> taskList = taskService.getAllTasks(userDetails);
@@ -72,7 +73,7 @@ public class TaskController extends BaseController{
 
 
     @GetMapping("/all_by_project")
-    public ResponseEntity<?> getAllTasksByProject(@RequestParam String projectName) throws Exception {
+    public ResponseEntity<?> getAllTasksByProject(@RequestHeader("projectName") String projectName) throws Exception {
 
         UserDetails userDetails = super.getCurrentUser();
         taskService = serviceFactory.getTaskService(userDetails);
@@ -96,7 +97,7 @@ public class TaskController extends BaseController{
 
 
     @GetMapping("/all_by_status")
-    public ResponseEntity<?> getAllTasksByStatus(@RequestParam String status) throws Exception {
+    public ResponseEntity<?> getAllTasksByStatus(@RequestHeader("status") String status) throws Exception {
 
         UserDetails userDetails = super.getCurrentUser();
         taskService = serviceFactory.getTaskService(userDetails);

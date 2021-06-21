@@ -30,10 +30,11 @@ public class MyUserDetailsService implements UserDetailsService {
         AdminAccount admin = adminRepository.findAdminAccountByEmail(username);
 
         if(admin != null){
+            System.out.println("Here MyUserDetailService");
             UserDetails currentAdmin = User.builder()
                     .username(admin.getEmail())
                     .password(admin.getPassword())
-                    .roles(ApplicationUserRole.ADMIN.name(), ApplicationUserRole.USER.name())
+                    .roles(ApplicationUserRole.ADMIN.name())
                     .build();
             return currentAdmin;
 

@@ -6,8 +6,10 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import shaswata.taskmanager.common.ApplicationUserRole;
 import shaswata.taskmanager.dto.AuthenticationRequest;
 import shaswata.taskmanager.dto.AuthenticationResponse;
+import shaswata.taskmanager.exception.InvalidInputException;
 import shaswata.taskmanager.security.JwtUtil;
 import shaswata.taskmanager.service.MyUserDetailsService;
 
@@ -24,6 +26,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 
     @Transactional
+    @Override
     public AuthenticationResponse login(AuthenticationRequest request) throws Exception {
 
         try {
@@ -35,9 +38,25 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         final UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
         final String jwt = jwtTokenUtil.generateToken(userDetails);
-        AuthenticationResponse response = new AuthenticationResponse(jwt);
+        ApplicationUserRole userType = getUserType(userDetails);
+        AuthenticationResponse response = new AuthenticationResponse(jwt, userType.name());
         return response;
 
     }
+
+
+
+    private ApplicationUserRole getUserType(UserDetails user) throws InvalidInputException {
+         if(user.getAuthorities().stream().anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN"))){
+             return ApplicationUserRole.ADMIN;
+         }
+         if(user.getAuthorities().stream().anyMatch(role -> role.getAuthority().equals("ROLE_USER"))){
+             return ApplicationUserRole.USER;
+         }
+
+         throw new InvalidInputException("No role found for current user");
+    }
+
+
 
 }

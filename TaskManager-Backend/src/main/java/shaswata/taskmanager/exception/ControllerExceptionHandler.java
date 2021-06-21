@@ -25,6 +25,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = AccessDeniedException.class)
     public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException e, WebRequest request) {
+        System.out.println("Here AccessDeniedException");
         String message = e.getMessage();
         return new ResponseEntity<>(message, HttpStatus.FORBIDDEN);
     }

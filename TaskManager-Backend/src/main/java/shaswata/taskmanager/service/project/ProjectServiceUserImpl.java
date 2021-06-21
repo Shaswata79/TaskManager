@@ -16,8 +16,10 @@ import shaswata.taskmanager.repository.ProjectRepository;
 import shaswata.taskmanager.repository.TaskRepository;
 import shaswata.taskmanager.repository.UserRepository;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -30,12 +32,13 @@ public class ProjectServiceUserImpl implements ProjectService {
     private final UserRepository userRepo;
 
 
+    @Transactional
     @Override
     public ProjectDto createProject(ProjectDto dto, UserDetails currentUser) throws Exception {
-        if(dto.getName() == null || dto.getName() == ""){
+        if (dto.getName() == null || dto.getName() == "") {
             throw new InvalidInputException("Project name cannot be empty!");
         }
-        if(projectRepo.findProjectByName(dto.getName()) != null){
+        if (projectRepo.findProjectByName(dto.getName()) != null) {
             throw new DuplicateEntityException("Project '" + dto.getName() + "' already exists!");
         }
 
@@ -46,8 +49,8 @@ public class ProjectServiceUserImpl implements ProjectService {
         project.setTasks(taskList);
         project = projectRepo.save(project);
 
-        if(dto.getTasks() != null){
-            for(TaskDto taskDto : dto.getTasks()){
+        if (dto.getTasks() != null) {
+            for (TaskDto taskDto : dto.getTasks()) {
                 Task task = new Task();
                 task.setDescription(taskDto.getDescription());
                 task.setStatus(taskDto.getStatus());
@@ -72,24 +75,27 @@ public class ProjectServiceUserImpl implements ProjectService {
     }
 
 
+    @Transactional
     @Override
     public List<ProjectDto> getAllProjects(UserDetails currentUser) throws Exception {
         UserAccount user = userRepo.findUserAccountByEmail(currentUser.getUsername());
         List<Project> projectList = user.getProjects();
 
-        if(projectList == null){
+        if (projectList == null) {
             return null;
         }
 
-        List<ProjectDto> projectDtoList = projectList.stream().map(ProjectService::projectToDTO).collect(Collectors.toList());
+        List<ProjectDto> projectDtoList = projectList.stream()
+                                                        .map(ProjectService::projectToDTO)
+                                                        .collect(Collectors.toList());
         return projectDtoList;
     }
 
 
-
+    @Transactional
     @Override
     public String deleteProject(String name, UserDetails currentUser) throws Exception {
-        if(name == null || name == ""){
+        if (name == null || name == "") {
             throw new InvalidInputException("Project name cannot be empty!");
         }
 
@@ -97,24 +103,35 @@ public class ProjectServiceUserImpl implements ProjectService {
         List<Project> userProjectList = user.getProjects();
         Project project = projectRepo.findProjectByName(name);
 
-        if((project == null) || (userProjectList == null)){
+        if ((project == null) || (userProjectList == null)) {
             throw new ResourceNotFoundException("Project '" + name + "' not found!");
         }
 
-        if(userProjectList.contains(project)){
+        if (userProjectList.contains(project)) {
 
-            for(UserAccount thisUser : userRepo.findAll()){
-                if(user.getProjects().contains(project)){
+            for (UserAccount thisUser : userRepo.findAll()) {
+                //remove the project
+                if (thisUser.getProjects().contains(project)) {
                     thisUser.getProjects().remove(project);
-                    userRepo.save(thisUser);
+                    thisUser = userRepo.save(thisUser);
+
+                    //remove the tasks of this project from all users
+                    for (Task task : project.getTasks()) {
+                        if (thisUser.getTasks().contains(task)) {
+                            thisUser.getTasks().remove(task);
+                            thisUser = userRepo.save(thisUser);
+                        }
+                    }
                 }
             }
             projectRepo.deleteProjectByName(name);
 
-        } else{
+        } else {
             throw new AccessDeniedException("User can only delete own projects");
         }
 
         return "Project '" + name + "' was deleted.";
     }
+
+
 }

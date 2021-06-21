@@ -13,7 +13,7 @@ import shaswata.taskmanager.service.user.UserService;
 import shaswata.taskmanager.service.user.UserServiceUserImpl;
 
 
-//@CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
+@CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
@@ -48,7 +48,7 @@ public class UserController extends BaseController{
 
 
     @PostMapping("/assign_to_project")
-    public ResponseEntity<?> assignUserToProject(@RequestParam("username") String email, @RequestParam("projectName") String projectName) throws Exception {
+    public ResponseEntity<?> assignUserToProject(@RequestHeader("username") String email, @RequestHeader("projectName") String projectName) throws Exception {
 
         UserDetails userDetails = super.getCurrentUser();
         userService = serviceFactory.getUserService(userDetails);
@@ -59,8 +59,9 @@ public class UserController extends BaseController{
 
 
     @PostMapping("/assign_to_task")
-    public ResponseEntity<?> assignUserToTask(@RequestParam("username") String email, @RequestParam("taskID") Long id) throws Exception {
+    public ResponseEntity<?> assignUserToTask(@RequestHeader("username") String email, @RequestHeader("taskID") Long id) throws Exception {
 
+        System.out.println("Here Task assign");
         UserDetails userDetails = super.getCurrentUser();
         userService = serviceFactory.getUserService(userDetails);
         String message = userService.assignUserToTask(email, id, userDetails);

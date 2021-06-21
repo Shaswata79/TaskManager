@@ -2,6 +2,7 @@ package shaswata.taskmanager.service;
 
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import shaswata.taskmanager.common.ApplicationContextHolder;
@@ -19,7 +20,7 @@ import shaswata.taskmanager.service.user.UserService;
 import shaswata.taskmanager.service.user.UserServiceAdminImpl;
 import shaswata.taskmanager.service.user.UserServiceUserImpl;
 
-
+import java.util.function.Predicate;
 
 
 @Component
@@ -78,15 +79,12 @@ public class ServiceFactory {
 
 
     private boolean hasRole(UserDetails userDetails, ApplicationUserRole applicationUserRole){
-        if (userDetails != null && userDetails.getAuthorities()
-                                            .stream()
-                                            .anyMatch(role -> role.getAuthority()
-                                            .equals("ROLE_" + applicationUserRole.name())))
-        {
-            return true;
-        }
+        Predicate<GrantedAuthority> roleCheck = role -> role.getAuthority().equals("ROLE_" + applicationUserRole.name());
+        //Predicate<GrantedAuthority> roleCheck2 = grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_" + applicationUserRole.name();
 
-        return false;
+        return userDetails.getAuthorities()
+                .stream()
+                .anyMatch(roleCheck);
 
     }
 

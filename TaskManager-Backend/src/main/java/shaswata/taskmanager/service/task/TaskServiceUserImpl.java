@@ -126,7 +126,9 @@ public class TaskServiceUserImpl implements TaskService {
     public List<TaskDto> getAllTasks(UserDetails currentUser){
         UserAccount user = userRepo.findUserAccountByEmail(currentUser.getUsername());
         List<Task> taskList = user.getTasks();
-        List<TaskDto> taskDtoList = taskList.stream().map(TaskService::taskToDTO).collect(Collectors.toList());
+        List<TaskDto> taskDtoList = taskList.stream()
+                                                .map(TaskService::taskToDTO)
+                                                .collect(Collectors.toList());
 
         return taskDtoList;
     }
@@ -149,7 +151,9 @@ public class TaskServiceUserImpl implements TaskService {
         }
 
         List<Task> taskList = taskRepo.findTaskByProject(project);
-        List<TaskDto> taskDtoList = taskList.stream().map(TaskService::taskToDTO).collect(Collectors.toList());
+        List<TaskDto> taskDtoList = taskList.stream()
+                                                .map(TaskService::taskToDTO)
+                                                .collect(Collectors.toList());
 
         return taskDtoList;
     }
@@ -181,13 +185,10 @@ public class TaskServiceUserImpl implements TaskService {
         }
 
         List<Task> taskList = user.getTasks();
-        List<TaskDto> taskDtoList = new ArrayList<>();
-
-        for(Task task : taskList){
-            if(task.getStatus().equals(taskStatus)){
-                taskDtoList.add(TaskService.taskToDTO(task));
-            }
-        }
+        List<TaskDto> taskDtoList = taskList.stream()
+                                                .filter(task -> task.getStatus().equals(taskStatus))
+                                                .map(TaskService::taskToDTO)
+                                                .collect(Collectors.toList());
 
         return taskDtoList;
     }
@@ -202,18 +203,16 @@ public class TaskServiceUserImpl implements TaskService {
 
         UserAccount user = userRepo.findUserAccountByEmail(currentUser.getUsername());
         List<Task> taskList = user.getTasks();
-        List<TaskDto> expiredTasks = new ArrayList<>();
-
-        for(Task task : taskList){
-            if(task.getDueDate() != null){
-                if(task.getDueDate().before(currentDate)){
-                    expiredTasks.add(TaskService.taskToDTO(task));
-                }
-            }
-        }
+        List<TaskDto> expiredTasks = taskList.stream()
+                                                .filter(task -> (task.getDueDate() != null && task.getDueDate().before(currentDate)))
+                                                .map(TaskService::taskToDTO)
+                                                .collect(Collectors.toList());
 
         return expiredTasks;
     }
+
+
+
 
 
 

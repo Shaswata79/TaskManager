@@ -1,6 +1,6 @@
-# taskmanager-frontend
+# reparishop-frontend
 
-> A Vue.js frontend for TaskManager
+> A Vue.js project
 
 ## Build Setup
 

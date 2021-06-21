@@ -14,7 +14,7 @@ import shaswata.taskmanager.service.authentication.AuthenticationService;
 
 
 
-//@CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
+@CrossOrigin(origins = "*")   //enable resource sharing among other domain (eg: the frontend host server)
 @RestController
 @RequestMapping("/api/authentication")
 @RequiredArgsConstructor

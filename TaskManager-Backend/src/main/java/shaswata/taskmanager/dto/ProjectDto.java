@@ -16,4 +16,7 @@ public class ProjectDto {
 
     private List<TaskDto> tasks;
 
+    @NotNull
+    private Long projectId;
+
 }

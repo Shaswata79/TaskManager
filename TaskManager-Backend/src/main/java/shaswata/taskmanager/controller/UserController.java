@@ -48,18 +48,18 @@ public class UserController extends BaseController{
 
 
     @PostMapping("/assign_to_project")
-    public ResponseEntity<?> assignUserToProject(@RequestHeader("username") String email, @RequestHeader("projectName") String projectName) throws Exception {
+    public ResponseEntity<?> assignUserToProject(@RequestParam("username") String email, @RequestParam("projectId") Long projectId) throws Exception {
 
         UserDetails userDetails = super.getCurrentUser();
         userService = serviceFactory.getUserService(userDetails);
-        String message = userService.assignUserToProject(email, projectName, userDetails);
+        String message = userService.assignUserToProject(email, projectId, userDetails);
         return new ResponseEntity<>(message, HttpStatus.OK);
 
     }
 
 
     @PostMapping("/assign_to_task")
-    public ResponseEntity<?> assignUserToTask(@RequestHeader("username") String email, @RequestHeader("taskID") Long id) throws Exception {
+    public ResponseEntity<?> assignUserToTask(@RequestParam("username") String email, @RequestParam("taskID") Long id) throws Exception {
 
         System.out.println("Here Task assign");
         UserDetails userDetails = super.getCurrentUser();

@@ -15,7 +15,6 @@ import shaswata.taskmanager.repository.TaskRepository;
 
 import javax.transaction.Transactional;
 import java.sql.Date;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,12 +31,12 @@ public class TaskServiceAdminImpl implements TaskService {
     @Override
     public TaskDto createTask(TaskDto taskDto, UserDetails currentUser) throws Exception {
 
-        if(taskDto.getDescription() == "" || taskDto.getStatus() == null || taskDto.getProjectName() == "" || taskDto.getDescription() == null || taskDto.getProjectName() == null){
+        if(taskDto.getDescription() == "" || taskDto.getStatus() == null || taskDto.getProjectId() == null || taskDto.getDescription() == null){
             throw new InvalidInputException("Task description, status or project name cannot be empty!");
         }
 
         Task task = new Task();
-        Project project = projectRepo.findProjectByName(taskDto.getProjectName());
+        Project project = projectRepo.findProjectById(taskDto.getProjectId());
         if(project == null){
             throw new ResourceNotFoundException("A task can only be created in an existing project!");
         }
@@ -125,13 +124,13 @@ public class TaskServiceAdminImpl implements TaskService {
 
     @Transactional
     @Override
-    public List<TaskDto> getTasksByProject(String name, UserDetails currentUser) throws Exception {
-        if(name == null || name == ""){
+    public List<TaskDto> getTasksByProject(Long projectId, UserDetails currentUser) throws Exception {
+        if(projectId == null){
             throw new InvalidInputException("Project name cannot be empty!");
         }
-        Project project = projectRepo.findProjectByName(name);
+        Project project = projectRepo.findProjectById(projectId);
         if(project == null){
-            throw new ResourceNotFoundException("Project '" + name + "' not found!");
+            throw new ResourceNotFoundException("Project with id '" + projectId + "' not found!");
         }
 
         List<Task> taskList = taskRepo.findTaskByProject(project);

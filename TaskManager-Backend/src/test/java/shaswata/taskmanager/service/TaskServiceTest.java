@@ -10,6 +10,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import shaswata.taskmanager.common.ApplicationUserRole;
 import shaswata.taskmanager.dto.TaskDto;
 import shaswata.taskmanager.model.Project;
 import shaswata.taskmanager.model.Task;
@@ -18,7 +19,6 @@ import shaswata.taskmanager.model.UserAccount;
 import shaswata.taskmanager.repository.ProjectRepository;
 import shaswata.taskmanager.repository.TaskRepository;
 import shaswata.taskmanager.repository.UserRepository;
-import shaswata.taskmanager.common.ApplicationUserRole;
 import shaswata.taskmanager.service.task.TaskServiceAdminImpl;
 import shaswata.taskmanager.service.task.TaskServiceUserImpl;
 
@@ -51,7 +51,9 @@ public class TaskServiceTest {
     private static final String USER_PASSWORD = "fSHBlfsuesefd";
 
     private static final String PROJECT_NAME = "Task Manager";
+    private static final Long PROJECT_ID = 1l;
     private static final String PROJECT2_NAME = "Job Manager";
+    private static final Long PROJECT2_ID = 2l;
     private static final long currentTimeInMillis = System.currentTimeMillis();
     private static final Date pastDate = new Date(currentTimeInMillis - 86400000);
 
@@ -184,6 +186,7 @@ public class TaskServiceTest {
                 taskList.add(TASK2);
 
                 PROJECT.setName(PROJECT_NAME);
+                PROJECT.setId(PROJECT_ID);
                 PROJECT.setTasks(taskList);
                 return TASK2;
 
@@ -247,8 +250,8 @@ public class TaskServiceTest {
         });
 
 
-        lenient().when(projectRepo.findProjectByName(anyString())).thenAnswer((InvocationOnMock invocation) -> {
-            if (invocation.getArgument(0).equals(PROJECT_NAME)) {
+        lenient().when(projectRepo.findProjectById(anyLong())).thenAnswer((InvocationOnMock invocation) -> {
+            if (invocation.getArgument(0).equals(PROJECT_ID)) {
 
                 List<Task> taskList = new ArrayList<>();
 
@@ -259,13 +262,15 @@ public class TaskServiceTest {
                 taskList.add(TASK1);
 
                 PROJECT.setName(PROJECT_NAME);
+                PROJECT.setId(PROJECT_ID);
                 PROJECT.setTasks(taskList);
                 return PROJECT;
 
-            } else if (invocation.getArgument(0).equals(PROJECT2_NAME)) {
+            } else if (invocation.getArgument(0).equals(PROJECT2_ID)) {
                 List<Task> taskList = new ArrayList<>();
 
                 PROJECT2.setName(PROJECT2_NAME);
+                PROJECT2.setId(PROJECT2_ID);
                 PROJECT2.setTasks(taskList);
                 return PROJECT2;
 
@@ -288,13 +293,13 @@ public class TaskServiceTest {
     public void testCreateTask(){
 
         TaskDto dto = new TaskDto();
-        dto.setProjectName(PROJECT_NAME);
+        dto.setProjectId(PROJECT_ID);
         dto.setStatus(TaskStatus.open);
         dto.setDescription("Create Mobile App");
 
         try{
             dto = userService.createTask(dto, CURRENT_USER);
-            assertEquals(PROJECT_NAME, dto.getProjectName());
+            assertEquals(PROJECT_ID, dto.getProjectId());
             assertEquals("Create Mobile App", dto.getDescription());
             assertEquals(TaskStatus.open, dto.getStatus());
             assertNull(dto.getDueDate());
@@ -309,7 +314,7 @@ public class TaskServiceTest {
     @Test
     public void testCreateTaskNullDescription(){
         TaskDto dto = new TaskDto();
-        dto.setProjectName(PROJECT_NAME);
+        dto.setProjectId(PROJECT_ID);
         dto.setStatus(TaskStatus.open);
         dto.setDescription(null);
 
@@ -325,7 +330,7 @@ public class TaskServiceTest {
     @Test
     public void testCreateTaskInvalidAccess(){
         TaskDto dto = new TaskDto();
-        dto.setProjectName(PROJECT2_NAME);
+        dto.setProjectId(PROJECT2_ID);
         dto.setStatus(TaskStatus.open);
         dto.setDescription(null);
 
@@ -342,7 +347,7 @@ public class TaskServiceTest {
     @Test
     public void testCreateTaskAlreadyInProject(){
         TaskDto dto = new TaskDto();
-        dto.setProjectName(PROJECT_NAME);
+        dto.setProjectId(PROJECT_ID);
         dto.setStatus(TaskStatus.open);
         dto.setDescription(TASK1_DESCRIPTION);
 
@@ -358,7 +363,7 @@ public class TaskServiceTest {
     @Test
     public void testCreateTaskNonExistentProject(){
         TaskDto dto = new TaskDto();
-        dto.setProjectName("Imaginary Project");
+        dto.setProjectId(3232L);
         dto.setStatus(TaskStatus.open);
         dto.setDescription("Create mobile app");
 
@@ -376,7 +381,7 @@ public class TaskServiceTest {
     public void testEditTask(){
 
         TaskDto dto = new TaskDto();
-        dto.setProjectName(PROJECT_NAME);
+        dto.setProjectId(PROJECT_ID);
         dto.setStatus(TaskStatus.inProgress);
         dto.setDescription("Create mobile app");
 
@@ -384,7 +389,7 @@ public class TaskServiceTest {
             dto = userService.editTask(TASK2_ID, dto, CURRENT_USER);
             assertEquals("Create mobile app", dto.getDescription());
             assertEquals(TaskStatus.inProgress, dto.getStatus());
-            assertEquals(PROJECT_NAME, dto.getProjectName());
+            assertEquals(PROJECT_ID, dto.getProjectId());
         }catch (Exception e){
             fail(e.getMessage());
         }
@@ -396,7 +401,7 @@ public class TaskServiceTest {
     public void testEditTaskNullID(){
 
         TaskDto dto = new TaskDto();
-        dto.setProjectName(PROJECT_NAME);
+        dto.setProjectId(PROJECT_ID);
         dto.setStatus(TaskStatus.open);
         dto.setDescription(TASK1_DESCRIPTION);
 
@@ -414,7 +419,7 @@ public class TaskServiceTest {
     public void testEditNonExistentTask(){
 
         TaskDto dto = new TaskDto();
-        dto.setProjectName(PROJECT_NAME);
+        dto.setProjectId(PROJECT_ID);
         dto.setStatus(TaskStatus.open);
         dto.setDescription(TASK1_DESCRIPTION);
 
@@ -431,7 +436,7 @@ public class TaskServiceTest {
     @Test
     public void testEditClosedTask(){
         TaskDto dto = new TaskDto();
-        dto.setProjectName(PROJECT_NAME);
+        dto.setProjectId(PROJECT_ID);
         dto.setStatus(TaskStatus.inProgress);
         dto.setDescription("Do something");
 
@@ -451,7 +456,7 @@ public class TaskServiceTest {
             TaskDto dto = adminService.getTask(TASK2_ID, CURRENT_USER);
             assertEquals(TASK2_DESCRIPTION, dto.getDescription());
             assertEquals(TASK2_STATUS, dto.getStatus());
-            assertEquals(PROJECT_NAME, dto.getProjectName());
+            assertEquals(PROJECT_ID, dto.getProjectId());
         } catch(Exception e){
             fail(e.getMessage());
         }
@@ -525,11 +530,11 @@ public class TaskServiceTest {
     public void testGetTaskByProject(){
 
         try{
-            List<TaskDto> tasks = adminService.getTasksByProject(PROJECT_NAME, CURRENT_USER);
+            List<TaskDto> tasks = adminService.getTasksByProject(PROJECT_ID, CURRENT_USER);
             assertEquals(2, tasks.size());
             assertEquals(TASK1_DESCRIPTION, tasks.get(0).getDescription());
             assertEquals(TASK2_DESCRIPTION, tasks.get(1).getDescription());
-            assertEquals(PROJECT_NAME, tasks.get(0).getProjectName());
+            assertEquals(PROJECT_ID, tasks.get(0).getProjectId());
         } catch(Exception e){
             fail(e.getMessage());
         }
@@ -551,10 +556,10 @@ public class TaskServiceTest {
     @Test
     public void testGetTaskByNonExistentProject(){
         try{
-            List<TaskDto> tasks = adminService.getTasksByProject("Imaginary Project", CURRENT_USER);
+            List<TaskDto> tasks = adminService.getTasksByProject(669L, CURRENT_USER);
             fail("Should throw exception");
         } catch(Exception e){
-            assertEquals("Project 'Imaginary Project' not found!", e.getMessage());
+            assertEquals("Project with id '669' not found!", e.getMessage());
         }
     }
 

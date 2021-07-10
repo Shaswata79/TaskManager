@@ -1,58 +1,28 @@
 package shaswata.taskmanager.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
+import lombok.Getter;
+import lombok.Setter;
+
+import javax.persistence.*;
 import java.util.List;
 
 
 @Entity
+@Getter
+@Setter
+@Table(uniqueConstraints = @UniqueConstraint(columnNames={"email"}))
 public class UserAccount extends Account{
 
-    private List<Project> projects;
-
-    private List<Task> tasks;
-
-
-    ///////////////////////////////////////////////
-
+    @Id
+    @GeneratedValue
+    private Long id;
 
     @ManyToMany(targetEntity = Project.class, fetch = FetchType.LAZY)
-    public List<Project> getProjects() {
-        return projects;
-    }
-
-    public void setProjects(List<Project> projects) {
-        this.projects = projects;
-    }
-
-
-    //////////////////////////////////////////////////////
-
+    private List<Project> projects;
 
     @ManyToMany(targetEntity = Task.class, fetch = FetchType.LAZY)
-    public List<Task> getTasks() {
-        return tasks;
-    }
-
-    public void setTasks(List<Task> tasks) {
-        this.tasks = tasks;}
-
-
-    ////////////////////////////////////////////////////////////
-
-
-    @Id
-    public String getEmail() {
-        return super.getEmail();
-    }
-
-    public void setEmail(String email) {
-        super.setEmail(email);
-    }
-
+    private List<Task> tasks;
 
 
 }

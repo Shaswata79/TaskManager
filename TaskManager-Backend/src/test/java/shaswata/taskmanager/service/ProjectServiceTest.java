@@ -12,6 +12,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import shaswata.taskmanager.common.ApplicationUserRole;
 import shaswata.taskmanager.dto.ProjectDto;
 import shaswata.taskmanager.dto.TaskDto;
 import shaswata.taskmanager.model.Project;
@@ -21,7 +22,6 @@ import shaswata.taskmanager.model.UserAccount;
 import shaswata.taskmanager.repository.ProjectRepository;
 import shaswata.taskmanager.repository.TaskRepository;
 import shaswata.taskmanager.repository.UserRepository;
-import shaswata.taskmanager.common.ApplicationUserRole;
 import shaswata.taskmanager.service.project.ProjectServiceAdminImpl;
 import shaswata.taskmanager.service.project.ProjectServiceUserImpl;
 
@@ -55,7 +55,9 @@ public class ProjectServiceTest {
     private static final String USER_PASSWORD = "fSHBlfsuesefd";
 
     private static final String PROJECT1_NAME = "Task Manager";
+    private static final Long PROJECT1_ID = 1l;
     private static final String PROJECT2_NAME = "Another Project";
+    private static final Long PROJECT2_ID = 2l;
 
 
     private static final String TASK1_DESCRIPTION = "Create Backend";
@@ -149,8 +151,8 @@ public class ProjectServiceTest {
 
 
 
-        lenient().when(projectRepo.findProjectByName(anyString())).thenAnswer((InvocationOnMock invocation) -> {
-            if (invocation.getArgument(0).equals(PROJECT1_NAME)) {
+        lenient().when(projectRepo.findProjectById(anyLong())).thenAnswer((InvocationOnMock invocation) -> {
+            if (invocation.getArgument(0).equals(PROJECT1_ID)) {
                 List<Task> taskList = new ArrayList<>();
 
                 TASK1.setProject(PROJECT1);
@@ -159,10 +161,11 @@ public class ProjectServiceTest {
                 taskList.add(TASK1);
 
                 PROJECT1.setName(PROJECT1_NAME);
+                PROJECT1.setId(PROJECT1_ID);
                 PROJECT1.setTasks(taskList);
                 return PROJECT1;
 
-            } else if(invocation.getArgument(0).equals(PROJECT2_NAME)){
+            } else if(invocation.getArgument(0).equals(PROJECT2_ID)){
                 List<Task> taskList = new ArrayList<>();
 
                 TASK2.setProject(PROJECT2);
@@ -171,6 +174,7 @@ public class ProjectServiceTest {
                 taskList.add(TASK2);
 
                 PROJECT2.setName(PROJECT2_NAME);
+                PROJECT2.setId(PROJECT2_ID);
                 PROJECT2.setTasks(taskList);
                 return PROJECT2;
 
@@ -191,11 +195,12 @@ public class ProjectServiceTest {
     public void testCreateProject(){
         ProjectDto dto = new ProjectDto();
         dto.setName("New Project");
+        dto.setProjectId(3L);
         List<TaskDto> taskDtoList = new ArrayList<>();
 
         TaskDto taskDto = new TaskDto();
         taskDto.setDescription("Create Website");
-        taskDto.setProjectName("New Project");
+        taskDto.setProjectId(3L);
         taskDto.setStatus(TaskStatus.open);
         taskDtoList.add(taskDto);
 
@@ -205,7 +210,6 @@ public class ProjectServiceTest {
             dto = userService.createProject(dto, CURRENT_USER);
             assertEquals("New Project", dto.getName());
             assertEquals("Create Website", dto.getTasks().get(0).getDescription());
-            assertEquals("New Project", dto.getTasks().get(0).getProjectName());
             assertEquals(1, dto.getTasks().size());
         } catch (Exception e){
             fail(e.getMessage());
@@ -230,28 +234,13 @@ public class ProjectServiceTest {
     }
 
 
-    @Test
-    public void testCreateProjectAlreadyExists(){
-        ProjectDto dto = new ProjectDto();
-        dto.setName(PROJECT1_NAME);
-        List<TaskDto> taskDtoList = new ArrayList<>();
-        dto.setTasks(taskDtoList);
-
-        try {
-            dto = userService.createProject(dto, CURRENT_USER);
-            fail("Should throw exception");
-        } catch(Exception e){
-            assertEquals("Project '" + PROJECT1_NAME + "' already exists!", e.getMessage());
-        }
-    }
-
 
 
     @Test
     public void testDeleteProject() {
         try {
-            userService.deleteProject(PROJECT1_NAME, CURRENT_USER);
-            verify(projectRepo, times(1)).deleteProjectByName(any());
+            userService.deleteProject(PROJECT1_ID, CURRENT_USER);
+            verify(projectRepo, times(1)).deleteProjectById(any());
             verify(userRepo, times(1)).findAll();
 
         } catch (Exception e) {
@@ -263,7 +252,7 @@ public class ProjectServiceTest {
     @Test
     public void testDeleteProjectInvalidAccess() {
         try {
-            userService.deleteProject(PROJECT2_NAME, CURRENT_USER);
+            userService.deleteProject(PROJECT2_ID, CURRENT_USER);
             fail("Should throw exception");
 
         } catch (Exception e) {
@@ -273,12 +262,12 @@ public class ProjectServiceTest {
 
 
     @Test
-    public void testDeleteProjectNullName() {
+    public void testDeleteProjectNullID() {
         try {
             userService.deleteProject(null, CURRENT_USER);
             fail("Should throw an exception");
         } catch (Exception e) {
-            assertEquals("Project name cannot be empty!", e.getMessage());
+            assertEquals("Project id cannot be empty!", e.getMessage());
         }
     }
 
@@ -286,10 +275,10 @@ public class ProjectServiceTest {
     @Test
     public void testDeleteNonExistentProject() {
         try {
-            userService.deleteProject("Some name", CURRENT_USER);
+            userService.deleteProject(44l, CURRENT_USER);
             fail("Should throw an exception");
         } catch (Exception e) {
-            assertEquals("Project 'Some name' not found!", e.getMessage());
+            assertEquals("Project with id '44' not found!", e.getMessage());
         }
     }
 

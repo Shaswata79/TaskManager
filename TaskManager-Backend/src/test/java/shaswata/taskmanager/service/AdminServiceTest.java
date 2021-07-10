@@ -24,8 +24,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.lenient;
 
 
@@ -52,7 +51,9 @@ public class AdminServiceTest {
     private static final String USER2_PASSWORD = "fSHBlfsuesefd";
 
     private static final String PROJECT1_NAME = "Task Manager";
+    private static final Long PROJECT1_ID = 1l;
     private static final String PROJECT2_NAME = "Another Project";
+    private static final Long PROJECT2_ID = 2l;
 
 
     private static final String TASK1_DESCRIPTION = "Create Backend";
@@ -163,8 +164,8 @@ public class AdminServiceTest {
 
 
 
-        lenient().when(projectRepo.findProjectByName(anyString())).thenAnswer((InvocationOnMock invocation) -> {
-            if (invocation.getArgument(0).equals(PROJECT1_NAME)) {
+        lenient().when(projectRepo.findProjectById(anyLong())).thenAnswer((InvocationOnMock invocation) -> {
+            if (invocation.getArgument(0).equals(PROJECT1_ID)) {
                 List<Task> taskList = new ArrayList<>();
 
                 TASK1.setProject(PROJECT1);
@@ -172,11 +173,12 @@ public class AdminServiceTest {
                 TASK1.setStatus(TASK1_STATUS);
                 taskList.add(TASK1);
 
+                PROJECT1.setId(PROJECT1_ID);
                 PROJECT1.setName(PROJECT1_NAME);
                 PROJECT1.setTasks(taskList);
                 return PROJECT1;
 
-            } else if(invocation.getArgument(0).equals(PROJECT2_NAME)){
+            } else if(invocation.getArgument(0).equals(PROJECT2_ID)){
                 List<Task> taskList = new ArrayList<>();
 
                 TASK2.setProject(PROJECT2);
@@ -184,6 +186,7 @@ public class AdminServiceTest {
                 TASK2.setStatus(TASK2_STATUS);
                 taskList.add(TASK2);
 
+                PROJECT2.setId(PROJECT2_ID);
                 PROJECT2.setName(PROJECT2_NAME);
                 PROJECT2.setTasks(taskList);
                 return PROJECT2;
@@ -199,6 +202,8 @@ public class AdminServiceTest {
         lenient().when(projectRepo.save(any(Project.class))).thenAnswer((InvocationOnMock invocation) -> invocation.getArgument(0));
 
     }
+
+
 
     @Test
     public void testGetAllProjectsByUser(){

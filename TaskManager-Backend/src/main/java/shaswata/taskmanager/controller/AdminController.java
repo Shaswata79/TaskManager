@@ -10,8 +10,8 @@ import shaswata.taskmanager.dto.AdminDto;
 import shaswata.taskmanager.dto.ProjectDto;
 import shaswata.taskmanager.dto.TaskDto;
 import shaswata.taskmanager.dto.UserDto;
-import shaswata.taskmanager.service.admin.AdminService;
 import shaswata.taskmanager.service.ServiceFactory;
+import shaswata.taskmanager.service.admin.AdminService;
 
 import java.util.List;
 
@@ -28,7 +28,7 @@ public class AdminController extends BaseController{
 
     @GetMapping("/projects_by_user")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> getProjectsByUser(@RequestHeader("email") String email) throws Exception {
+    public ResponseEntity<?> getProjectsByUser(@RequestParam("email") String email) throws Exception {
 
         adminService = serviceFactory.getAdminService();
         List<ProjectDto> userProjectList = adminService.getProjectsByUser(email);
@@ -39,7 +39,7 @@ public class AdminController extends BaseController{
 
     @GetMapping("/tasks_by_user")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> getTasksByUser(@RequestHeader("email") String email) throws Exception{
+    public ResponseEntity<?> getTasksByUser(@RequestParam("email") String email) throws Exception{
 
         adminService = serviceFactory.getAdminService();
         List<TaskDto> userTaskList = adminService.getTasksByUser(email);

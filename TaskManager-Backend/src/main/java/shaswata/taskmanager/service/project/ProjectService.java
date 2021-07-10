@@ -19,7 +19,7 @@ public interface ProjectService {
 
     ProjectDto createProject(ProjectDto dto, UserDetails currentUser) throws Exception;
     List<ProjectDto> getAllProjects(UserDetails currentUser) throws Exception;
-    String deleteProject(String name, UserDetails currentUser) throws Exception;
+    String deleteProject(Long id, UserDetails currentUser) throws Exception;
 
 
 

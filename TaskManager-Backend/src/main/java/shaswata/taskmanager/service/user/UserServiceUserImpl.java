@@ -15,6 +15,7 @@ import shaswata.taskmanager.model.UserAccount;
 import shaswata.taskmanager.repository.ProjectRepository;
 import shaswata.taskmanager.repository.TaskRepository;
 import shaswata.taskmanager.repository.UserRepository;
+import shaswata.taskmanager.service.EmailService;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ public class UserServiceUserImpl implements UserService {
     private final TaskRepository taskRepo;
     private final ProjectRepository projectRepo;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
 
     @Transactional
@@ -55,6 +57,7 @@ public class UserServiceUserImpl implements UserService {
         user.setTasks(taskList);
         user.setProjects(projectList);
 
+        //emailService.accountCreationEmail(dto.getEmail(), dto.getName());
         userRepo.save(user);
         return UserService.userToDTO(user);
 
@@ -71,7 +74,7 @@ public class UserServiceUserImpl implements UserService {
         if(id == null) {
             throw new InvalidInputException("Task ID cannot be empty!");
         }
-        if(!validUserOfProject(currentUser.getUsername(), id)){
+        if(!validUserOfTaskProject(currentUser.getUsername(), id)){
             throw new AccessDeniedException("User can only access own projects!");
         }
 
@@ -102,14 +105,14 @@ public class UserServiceUserImpl implements UserService {
 
     @Transactional
     @Override
-    public String assignUserToProject(String email, String projectName, UserDetails currentUser) throws Exception {
+    public String assignUserToProject(String email, Long projectId, UserDetails currentUser) throws Exception {
         if(email == null || email == ""){
             throw new InvalidInputException("Email cannot be empty!");
         }
-        if(projectName == null || projectName == "") {
-            throw new InvalidInputException("Project name cannot be empty!");
+        if(projectId == null) {
+            throw new InvalidInputException("Project id cannot be empty!");
         }
-        if(!validUserOfProject(currentUser.getUsername(), projectName)){
+        if(!validUserOfProject(currentUser.getUsername(), projectId)){
             throw new AccessDeniedException("User can only access own projects!");
         }
 
@@ -117,16 +120,16 @@ public class UserServiceUserImpl implements UserService {
         if(user == null){
             throw new Exception("User account with email '" + email + "' not found.");
         }
-        Project project = projectRepo.findProjectByName(projectName);
+        Project project = projectRepo.findProjectById(projectId);
         if(project == null){
-            throw new ResourceNotFoundException("Project '" + projectName + "' not found.");
+            throw new ResourceNotFoundException("Project with id '" + projectId + "' not found.");
         }
 
         List<Project> userProjectList = user.getProjects();
         userProjectList.add(project);
         user.setProjects(userProjectList);
         userRepo.save(user);
-        return "User " + email + " assigned to project '" + projectName + "'.";
+        return "User " + email + " assigned to project '" + project.getName() + "' with id '" + project.getId() + "'.";
 
     }
 
@@ -180,10 +183,10 @@ public class UserServiceUserImpl implements UserService {
 
 
 
-    private boolean validUserOfProject(String username, String projectName){
+    private boolean validUserOfProject(String username, Long projectId){
         UserAccount user = userRepo.findUserAccountByEmail(username);
         List<Project> userProjectList = user.getProjects();
-        Project project = projectRepo.findProjectByName(projectName);
+        Project project = projectRepo.findProjectById(projectId);
         if(project != null && userProjectList != null){
             if(userProjectList.contains(project)){
                 return true;
@@ -193,13 +196,13 @@ public class UserServiceUserImpl implements UserService {
     }
 
 
-    private boolean validUserOfProject(String username, Long id){
-        Task task = taskRepo.findTaskById(id);
-        String projectName = task.getProject().getName();
+    private boolean validUserOfTaskProject(String username, Long taskId){
+        Task task = taskRepo.findTaskById(taskId);
+        Long projectId = task.getProject().getId();
         UserAccount user = userRepo.findUserAccountByEmail(username);
 
         List<Project> userProjectList = user.getProjects();
-        Project project = projectRepo.findProjectByName(projectName);
+        Project project = projectRepo.findProjectById(projectId);
         if(project != null && userProjectList != null){
             if(userProjectList.contains(project)){
                 return true;

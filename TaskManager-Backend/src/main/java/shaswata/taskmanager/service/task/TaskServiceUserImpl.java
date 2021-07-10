@@ -18,7 +18,6 @@ import shaswata.taskmanager.repository.UserRepository;
 
 import javax.transaction.Transactional;
 import java.sql.Date;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,17 +35,17 @@ public class TaskServiceUserImpl implements TaskService {
     @Override
     public TaskDto createTask(TaskDto taskDto, UserDetails currentUser) throws Exception {
 
-        if(taskDto.getDescription() == "" || taskDto.getStatus() == null || taskDto.getProjectName() == "" || taskDto.getDescription() == null || taskDto.getProjectName() == null){
+        if(taskDto.getDescription() == "" || taskDto.getStatus() == null || taskDto.getProjectId() == null || taskDto.getDescription() == null){
             throw new InvalidInputException("Task description, status or project name cannot be empty!");
         }
 
         Task task = new Task();
-        Project project = projectRepo.findProjectByName(taskDto.getProjectName());
+        Project project = projectRepo.findProjectById(taskDto.getProjectId());
         if(project == null){
             throw new ResourceNotFoundException("A task can only be created in an existing project!");
         }
 
-        if(!validUserOfProject(currentUser.getUsername(), taskDto.getProjectName())){
+        if(!validUserOfProject(currentUser.getUsername(), taskDto.getProjectId())){
             throw new AccessDeniedException("Not a valid user of this project");
         }
 
@@ -136,18 +135,18 @@ public class TaskServiceUserImpl implements TaskService {
 
     @Transactional
     @Override
-    public List<TaskDto> getTasksByProject(String name, UserDetails currentUser) throws Exception {
+    public List<TaskDto> getTasksByProject(Long projectId, UserDetails currentUser) throws Exception {
 
-        if(name == null || name == ""){
+        if(projectId == null){
             throw new InvalidInputException("Project name cannot be empty!");
         }
-        if(!validUserOfProject(currentUser.getUsername(), name)){
+        if(!validUserOfProject(currentUser.getUsername(), projectId)){
             throw new AccessDeniedException("Not a valid user of this project");
         }
 
-        Project project = projectRepo.findProjectByName(name);
+        Project project = projectRepo.findProjectById(projectId);
         if(project == null){
-            throw new ResourceNotFoundException("Project '" + name + "' not found!");
+            throw new ResourceNotFoundException("Project with id'" + projectId + "' not found!");
         }
 
         List<Task> taskList = taskRepo.findTaskByProject(project);
@@ -228,10 +227,10 @@ public class TaskServiceUserImpl implements TaskService {
         return false;
     }
 
-    private boolean validUserOfProject(String username, String projectName){
+    private boolean validUserOfProject(String username, Long projectId){
         UserAccount user = userRepo.findUserAccountByEmail(username);
         List<Project> userProjectList = user.getProjects();
-        Project project = projectRepo.findProjectByName(projectName);
+        Project project = projectRepo.findProjectById(projectId);
         if(project != null && userProjectList != null){
             if(userProjectList.contains(project)){
                 return true;

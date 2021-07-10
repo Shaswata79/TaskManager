@@ -6,7 +6,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import shaswata.taskmanager.dto.ProjectDto;
 import shaswata.taskmanager.dto.TaskDto;
-import shaswata.taskmanager.exception.DuplicateEntityException;
 import shaswata.taskmanager.exception.InvalidInputException;
 import shaswata.taskmanager.exception.ResourceNotFoundException;
 import shaswata.taskmanager.model.Project;
@@ -19,7 +18,6 @@ import shaswata.taskmanager.repository.UserRepository;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -37,9 +35,6 @@ public class ProjectServiceUserImpl implements ProjectService {
     public ProjectDto createProject(ProjectDto dto, UserDetails currentUser) throws Exception {
         if (dto.getName() == null || dto.getName() == "") {
             throw new InvalidInputException("Project name cannot be empty!");
-        }
-        if (projectRepo.findProjectByName(dto.getName()) != null) {
-            throw new DuplicateEntityException("Project '" + dto.getName() + "' already exists!");
         }
 
         String name = dto.getName();
@@ -94,17 +89,17 @@ public class ProjectServiceUserImpl implements ProjectService {
 
     @Transactional
     @Override
-    public String deleteProject(String name, UserDetails currentUser) throws Exception {
-        if (name == null || name == "") {
-            throw new InvalidInputException("Project name cannot be empty!");
+    public String deleteProject(Long id, UserDetails currentUser) throws Exception {
+        if (id == null) {
+            throw new InvalidInputException("Project id cannot be empty!");
         }
 
         UserAccount user = userRepo.findUserAccountByEmail(currentUser.getUsername());
         List<Project> userProjectList = user.getProjects();
-        Project project = projectRepo.findProjectByName(name);
+        Project project = projectRepo.findProjectById(id);
 
         if ((project == null) || (userProjectList == null)) {
-            throw new ResourceNotFoundException("Project '" + name + "' not found!");
+            throw new ResourceNotFoundException("Project with id '" + id + "' not found!");
         }
 
         if (userProjectList.contains(project)) {
@@ -124,13 +119,13 @@ public class ProjectServiceUserImpl implements ProjectService {
                     }
                 }
             }
-            projectRepo.deleteProjectByName(name);
+            projectRepo.deleteProjectById(id);
 
         } else {
             throw new AccessDeniedException("User can only delete own projects");
         }
 
-        return "Project '" + name + "' was deleted.";
+        return "Project with id '" + id + "' was deleted.";
     }
 
 

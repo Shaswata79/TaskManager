@@ -5,7 +5,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import shaswata.taskmanager.dto.ProjectDto;
 import shaswata.taskmanager.dto.TaskDto;
-import shaswata.taskmanager.exception.DuplicateEntityException;
 import shaswata.taskmanager.exception.InvalidInputException;
 import shaswata.taskmanager.exception.ResourceNotFoundException;
 import shaswata.taskmanager.model.Project;
@@ -18,7 +17,6 @@ import shaswata.taskmanager.repository.UserRepository;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 
@@ -36,9 +34,6 @@ public class ProjectServiceAdminImpl implements ProjectService {
     public ProjectDto createProject(ProjectDto dto, UserDetails currentUser) throws Exception {
         if(dto.getName() == null || dto.getName() == ""){
             throw new InvalidInputException("Project name cannot be empty!");
-        }
-        if(projectRepo.findProjectByName(dto.getName()) != null){
-            throw new DuplicateEntityException("Project '" + dto.getName() + "' already exists!");
         }
 
         String name = dto.getName();
@@ -82,35 +77,31 @@ public class ProjectServiceAdminImpl implements ProjectService {
 
     @Transactional
     @Override
-    public String deleteProject(String name, UserDetails currentUser) throws Exception {
-        if(name == null || name == ""){
-            throw new InvalidInputException("Project name cannot be empty!");
+    public String deleteProject(Long id, UserDetails currentUser) throws Exception {
+        if(id == null){
+            throw new InvalidInputException("Project id cannot be empty!");
         }
-        Project project = projectRepo.findProjectByName(name);
+        Project project = projectRepo.findProjectById(id);
         if(project == null){
-            throw new ResourceNotFoundException("Project '" + name + "' not found!");
+            throw new ResourceNotFoundException("Project with id'" + id + "' not found!");
         }
 
         //first remove the tasks from users
-        for(Task task : project.getTasks()){
-            deleteUserTasks(task);
-        }
+        project.getTasks().forEach(this::deleteUserTasks);
 
         //then remove the project from users
         deleteUserProjects(project);
 
         //finally delete the project from repo
-        projectRepo.deleteProjectByName(name);
-        return "Project '" + name + "' was deleted.";
+        projectRepo.deleteProjectById(id);
+        return "Project with id '" + id + "' was deleted.";
     }
 
 
     private void deleteUserTasks(Task task){
         for(UserAccount user : userRepo.findAll()){
             List<Task> userTaskList = user.getTasks();
-            if(userTaskList.contains(task)){
-                userTaskList.remove(task);
-            }
+            userTaskList.remove(task);
             user.setTasks(userTaskList);
             userRepo.save(user);
         }
@@ -119,9 +110,7 @@ public class ProjectServiceAdminImpl implements ProjectService {
     private void deleteUserProjects(Project project){
         for(UserAccount user : userRepo.findAll()){
             List<Project> userProjectList = user.getProjects();
-            if(userProjectList.contains(project)){
-                userProjectList.remove(project);
-            }
+            userProjectList.remove(project);
             user.setProjects(userProjectList);
             userRepo.save(user);
         }

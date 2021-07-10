@@ -2,20 +2,20 @@
 
 package shaswata.taskmanager.model;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import lombok.Getter;
+import lombok.Setter;
+
+import javax.persistence.*;
 
 @Entity
+@Getter
+@Setter
+@Table(uniqueConstraints = @UniqueConstraint(columnNames={"email"}))
 public class AdminAccount extends Account{
 
     @Id
-    public String getEmail() {
-            return super.getEmail();
-    }
-
-    public void setEmail(String email) {
-        super.setEmail(email);
-    }
+    @GeneratedValue
+    private Long id;
 
 }
 

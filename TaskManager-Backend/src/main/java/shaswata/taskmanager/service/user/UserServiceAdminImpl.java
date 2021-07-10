@@ -15,6 +15,7 @@ import shaswata.taskmanager.model.UserAccount;
 import shaswata.taskmanager.repository.ProjectRepository;
 import shaswata.taskmanager.repository.TaskRepository;
 import shaswata.taskmanager.repository.UserRepository;
+import shaswata.taskmanager.service.EmailService;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ public class UserServiceAdminImpl implements UserService {
     private final TaskRepository taskRepo;
     private final ProjectRepository projectRepo;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
 
     @Transactional
@@ -99,21 +101,21 @@ public class UserServiceAdminImpl implements UserService {
 
     @Transactional
     @Override
-    public String assignUserToProject(String email, String projectName, UserDetails currentUser) throws Exception {
+    public String assignUserToProject(String email, Long projectId, UserDetails currentUser) throws Exception {
         if(email == null || email == ""){
             throw new InvalidInputException("Email cannot be empty!");
         }
-        if(projectName == null || projectName == "") {
-            throw new InvalidInputException("Project name cannot be empty!");
+        if(projectId == null) {
+            throw new InvalidInputException("Project id cannot be empty!");
         }
 
         UserAccount user = userRepo.findUserAccountByEmail(email);
         if(user == null){
             throw new Exception("User account with email '" + email + "' not found.");
         }
-        Project project = projectRepo.findProjectByName(projectName);
+        Project project = projectRepo.findProjectById(projectId);
         if(project == null){
-            throw new ResourceNotFoundException("Project '" + projectName + "' not found.");
+            throw new ResourceNotFoundException("Project with id '" + projectId + "' not found.");
         }
 
         List<Project> userProjectList = user.getProjects();
@@ -123,7 +125,7 @@ public class UserServiceAdminImpl implements UserService {
         userProjectList.add(project);
         user.setProjects(userProjectList);
         userRepo.save(user);
-        return "User " + email + " assigned to project '" + projectName + "'.";
+        return "User " + email + " assigned to project '" + project.getName() + "' with id '" + project.getId() + "'.";
 
     }
 

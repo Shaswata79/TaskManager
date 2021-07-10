@@ -7,8 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import shaswata.taskmanager.dto.ProjectDto;
-import shaswata.taskmanager.service.project.ProjectService;
 import shaswata.taskmanager.service.ServiceFactory;
+import shaswata.taskmanager.service.project.ProjectService;
 
 import java.util.List;
 
@@ -48,12 +48,12 @@ public class ProjectController extends BaseController{
 
 
 
-    @DeleteMapping("/delete/{name}")
-    public ResponseEntity<?> deleteProject(@PathVariable("name") String projectName) throws Exception {
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteProject(@PathVariable("id") Long projectId) throws Exception {
 
         UserDetails userDetails = super.getCurrentUser();
         projectService = serviceFactory.getProjectService(userDetails);
-        String message = projectService.deleteProject(projectName, userDetails);
+        String message = projectService.deleteProject(projectId, userDetails);
         return new ResponseEntity<>(message, HttpStatus.OK);
 
     }

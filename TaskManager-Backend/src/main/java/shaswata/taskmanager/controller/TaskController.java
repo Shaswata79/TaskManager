@@ -73,11 +73,11 @@ public class TaskController extends BaseController{
 
 
     @GetMapping("/all_by_project")
-    public ResponseEntity<?> getAllTasksByProject(@RequestHeader("projectName") String projectName) throws Exception {
+    public ResponseEntity<?> getAllTasksByProject(@RequestParam("projectId") Long projectId) throws Exception {
 
         UserDetails userDetails = super.getCurrentUser();
         taskService = serviceFactory.getTaskService(userDetails);
-        List<TaskDto> taskDtoList = taskService.getTasksByProject(projectName, userDetails);
+        List<TaskDto> taskDtoList = taskService.getTasksByProject(projectId, userDetails);
         return new ResponseEntity<>(taskDtoList, HttpStatus.OK);
 
     }
@@ -97,7 +97,7 @@ public class TaskController extends BaseController{
 
 
     @GetMapping("/all_by_status")
-    public ResponseEntity<?> getAllTasksByStatus(@RequestHeader("status") String status) throws Exception {
+    public ResponseEntity<?> getAllTasksByStatus(@RequestParam("status") String status) throws Exception {
 
         UserDetails userDetails = super.getCurrentUser();
         taskService = serviceFactory.getTaskService(userDetails);

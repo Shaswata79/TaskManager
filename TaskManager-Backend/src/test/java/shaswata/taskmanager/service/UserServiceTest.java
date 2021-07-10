@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import shaswata.taskmanager.common.ApplicationUserRole;
 import shaswata.taskmanager.dto.UserDto;
 import shaswata.taskmanager.model.Project;
 import shaswata.taskmanager.model.Task;
@@ -18,7 +19,6 @@ import shaswata.taskmanager.model.UserAccount;
 import shaswata.taskmanager.repository.ProjectRepository;
 import shaswata.taskmanager.repository.TaskRepository;
 import shaswata.taskmanager.repository.UserRepository;
-import shaswata.taskmanager.common.ApplicationUserRole;
 import shaswata.taskmanager.service.user.UserServiceAdminImpl;
 import shaswata.taskmanager.service.user.UserServiceUserImpl;
 
@@ -41,6 +41,8 @@ public class UserServiceTest {
     @Mock
     PasswordEncoder passwordEncoder;
 
+
+
     @InjectMocks
     UserServiceUserImpl userService;
     @InjectMocks
@@ -59,6 +61,7 @@ public class UserServiceTest {
     private static final String USER2_PASSWORD = "fffdfdfdfdd";
 
     private static final String PROJECT_NAME = "Task Manager";
+    private static final Long PROJECT_ID = 1L;
     private static final String TASK_DESCRIPTION = "Create Backend";
     private static final TaskStatus TASK_STATUS = TaskStatus.open;
     private static final String TASK2_DESCRIPTION = "Create frontend";
@@ -99,6 +102,8 @@ public class UserServiceTest {
 
         });
 
+
+
         lenient().when(userRepo.findUserAccountByEmail(anyString())).thenAnswer((InvocationOnMock invocation) -> {
             if (invocation.getArgument(0).equals(USER_EMAIL)) {
 
@@ -119,6 +124,7 @@ public class UserServiceTest {
                 TASK2.setProject(PROJECT);
 
                 PROJECT.setTasks(taskList);
+                PROJECT.setId(PROJECT_ID);
                 PROJECT.setName(PROJECT_NAME);
 
                 USER.setName(USER_NAME);
@@ -150,6 +156,7 @@ public class UserServiceTest {
         lenient().when(taskRepo.findTaskById(anyLong())).thenAnswer((InvocationOnMock invocation) -> {
             if (invocation.getArgument(0).equals(TASK2_ID)) {
                 PROJECT.setName(PROJECT_NAME);
+                PROJECT.setId(PROJECT_ID);
 
                 TASK2.setId(TASK2_ID);
                 TASK2.setDescription(TASK2_DESCRIPTION);
@@ -170,9 +177,11 @@ public class UserServiceTest {
         });
 
 
-        lenient().when(projectRepo.findProjectByName(anyString())).thenAnswer((InvocationOnMock invocation) -> {
-            if (invocation.getArgument(0).equals(PROJECT_NAME)) {
+
+        lenient().when(projectRepo.findProjectById(anyLong())).thenAnswer((InvocationOnMock invocation) -> {
+            if (invocation.getArgument(0).equals(PROJECT_ID)) {
                 PROJECT.setName(PROJECT_NAME);
+                PROJECT.setId(PROJECT_ID);
                 PROJECT.setTasks(new ArrayList<>());
                 List<Project> projectList = new ArrayList<>();
                 projectList.add(PROJECT);

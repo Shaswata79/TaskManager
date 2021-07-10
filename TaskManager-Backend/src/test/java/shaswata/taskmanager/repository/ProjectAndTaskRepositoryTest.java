@@ -46,6 +46,7 @@ public class ProjectAndTaskRepositoryTest {
         List<Task> taskList = new ArrayList<>();
         project.setTasks(taskList);
         project = projectRepo.save(project);
+        Long projectID = project.getId();
 
         Task task1 = new Task();
         task1.setDescription("Create backend");
@@ -73,7 +74,7 @@ public class ProjectAndTaskRepositoryTest {
 
 
         //Load from Database
-        project = projectRepo.findProjectByName("Task Manager");
+        project = projectRepo.findProjectById(projectID);
         assertNotNull(project);
         assertEquals("Task Manager", project.getName());
         assertEquals(2, project.getTasks().size());
@@ -92,9 +93,11 @@ public class ProjectAndTaskRepositoryTest {
 
         Project project = new Project();
         project.setName("Task Manager");
+        project.setId(1L);
         List<Task> taskList = new ArrayList<>();
         project.setTasks(taskList);
         project = projectRepo.save(project);
+        Long projectID = project.getId();
 
         Task task = new Task();
         task.setDescription("Create backend");
@@ -114,18 +117,18 @@ public class ProjectAndTaskRepositoryTest {
 
 
         //Load from Database before delete
-        project = projectRepo.findProjectByName("Task Manager");
+        project = projectRepo.findProjectById(projectID);
         assertNotNull(project);
         assertEquals("Task Manager", project.getName());
         assertEquals("Create backend", project.getTasks().get(0).getDescription());
 
 
         //delete project
-        projectRepo.deleteProjectByName("Task Manager");
+        projectRepo.deleteProjectById(projectID);
 
 
         //try loading project from db
-        project = projectRepo.findProjectByName("Task Manager");
+        project = projectRepo.findProjectById(projectID);
         assertNull(project);
 
         //deleting project should also delete tasks in project
@@ -140,9 +143,11 @@ public class ProjectAndTaskRepositoryTest {
 
         Project project = new Project();
         project.setName("Task Manager");
+        project.setId(1L);
         List<Task> taskList = new ArrayList<>();
         project.setTasks(taskList);
         project = projectRepo.save(project);
+        Long projectID = project.getId();
 
         Task task1 = new Task();
         task1.setDescription("Create backend");
@@ -171,7 +176,7 @@ public class ProjectAndTaskRepositoryTest {
 
 
         //Load from Database before delete
-        project = projectRepo.findProjectByName("Task Manager");
+        project = projectRepo.findProjectById(projectID);
         assertNotNull(project);
         assertEquals("Task Manager", project.getName());
         assertEquals(2, project.getTasks().size());
@@ -191,7 +196,7 @@ public class ProjectAndTaskRepositoryTest {
         assertNull(task2);
 
 
-        project = projectRepo.findProjectByName("Task Manager");
+        project = projectRepo.findProjectById(projectID);
         assertNotNull(project);
         assertEquals("Task Manager", project.getName());
         assertEquals("Create backend", project.getTasks().get(0).getDescription());
@@ -204,6 +209,7 @@ public class ProjectAndTaskRepositoryTest {
 
         Project project = new Project();
         project.setName("Task Manager");
+        project.setId(1L);
         List<Task> taskList = new ArrayList<>();
         project.setTasks(taskList);
         project = projectRepo.save(project);

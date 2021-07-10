@@ -15,7 +15,7 @@ public interface TaskService {
     TaskDto editTask(Long id, TaskDto taskDto, UserDetails currentUser) throws Exception;
     TaskDto getTask(Long id, UserDetails currentUser) throws Exception;
     List<TaskDto> getAllTasks(UserDetails currentUser);
-    List<TaskDto> getTasksByProject(String projectName, UserDetails currentUser) throws Exception;
+    List<TaskDto> getTasksByProject(Long projectId, UserDetails currentUser) throws Exception;
     List<TaskDto> getTasksByStatus(String status, UserDetails currentUser) throws Exception;
     List<TaskDto> getExpiredTasks(UserDetails currentUser);
 
@@ -26,7 +26,7 @@ public interface TaskService {
         taskDto.setDescription(task.getDescription());
         taskDto.setDueDate(task.getDueDate());
         taskDto.setStatus(task.getStatus());
-        taskDto.setProjectName(task.getProject().getName());
+        taskDto.setProjectId(task.getProject().getId());
         taskDto.setId(task.getId());
         return taskDto;
     }

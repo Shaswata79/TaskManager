@@ -14,7 +14,7 @@ import java.sql.Date;
 public class TaskDto {
 
     @NotNull
-    private String projectName;
+    private Long projectId;
 
     @NotNull
     private String description;

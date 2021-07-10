@@ -9,7 +9,7 @@ import shaswata.taskmanager.model.UserAccount;
 public interface UserService {
 
 
-    String assignUserToProject(String email, String projectName, UserDetails currentUser) throws Exception;
+    String assignUserToProject(String email, Long projectId, UserDetails currentUser) throws Exception;
     String assignUserToTask(String email, Long id, UserDetails currentUser) throws Exception;
     UserDto getUser(String email, UserDetails currentUser) throws Exception;
     UserDto createUser(UserDto dto) throws Exception;

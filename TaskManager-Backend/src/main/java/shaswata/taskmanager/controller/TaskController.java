@@ -40,7 +40,7 @@ public class TaskController extends BaseController{
 
         UserDetails userDetails = super.getCurrentUser();
         taskService = serviceFactory.getTaskService(userDetails);
-        taskDto = taskService.editTask(id, taskDto,userDetails);
+        taskDto = taskService.editTask(id, taskDto, userDetails);
         return new ResponseEntity<>(taskDto, HttpStatus.OK);
 
     }

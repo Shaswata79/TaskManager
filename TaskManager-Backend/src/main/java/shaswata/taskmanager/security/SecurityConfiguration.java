@@ -42,7 +42,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
                         "/v2/api-docs",
                         "/swagger-ui.html",
                         "/swagger-resources/**",
-                        "/webjars/**").permitAll()
+                        "/webjars/**",
+                        "/foo").permitAll()
                 .anyRequest().authenticated()
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 

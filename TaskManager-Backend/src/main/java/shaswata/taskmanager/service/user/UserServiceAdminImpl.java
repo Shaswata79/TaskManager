@@ -12,10 +12,9 @@ import shaswata.taskmanager.exception.ResourceNotFoundException;
 import shaswata.taskmanager.model.Project;
 import shaswata.taskmanager.model.Task;
 import shaswata.taskmanager.model.UserAccount;
-import shaswata.taskmanager.repository.ProjectRepository;
-import shaswata.taskmanager.repository.TaskRepository;
-import shaswata.taskmanager.repository.UserRepository;
-import shaswata.taskmanager.service.EmailService;
+import shaswata.taskmanager.repository.hibernate.ProjectDAO;
+import shaswata.taskmanager.repository.hibernate.TaskDAO;
+import shaswata.taskmanager.repository.hibernate.UserDAO;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
@@ -26,11 +25,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserServiceAdminImpl implements UserService {
 
-    private final UserRepository userRepo;
-    private final TaskRepository taskRepo;
-    private final ProjectRepository projectRepo;
+    private final UserDAO userRepo;
+    private final TaskDAO taskRepo;
+    private final ProjectDAO projectRepo;
     private final PasswordEncoder passwordEncoder;
-    private final EmailService emailService;
 
 
     @Transactional
@@ -57,7 +55,7 @@ public class UserServiceAdminImpl implements UserService {
         user.setTasks(taskList);
         user.setProjects(projectList);
 
-        userRepo.save(user);
+        userRepo.create(user);
         return UserService.userToDTO(user);
 
     }
@@ -78,7 +76,7 @@ public class UserServiceAdminImpl implements UserService {
         if(user == null){
             throw new Exception("User account with email '" + email + "' not found.");
         }
-        Task task = taskRepo.findTaskById(id);
+        Task task = taskRepo.findById(id);
         if(task == null){
             throw new ResourceNotFoundException("Task with ID:" + id + "' not found.");
         }
@@ -93,7 +91,7 @@ public class UserServiceAdminImpl implements UserService {
         if(!userProjectList.contains(task.getProject())){
             userProjectList.add(task.getProject());
         }
-        userRepo.save(user);
+        userRepo.update(user);
         return "User " + email + " assigned to task '" + task.getDescription() + "' in project '" + task.getProject().getName() + "'.";
 
     }
@@ -113,7 +111,7 @@ public class UserServiceAdminImpl implements UserService {
         if(user == null){
             throw new Exception("User account with email '" + email + "' not found.");
         }
-        Project project = projectRepo.findProjectById(projectId);
+        Project project = projectRepo.findById(projectId);
         if(project == null){
             throw new ResourceNotFoundException("Project with id '" + projectId + "' not found.");
         }
@@ -124,7 +122,7 @@ public class UserServiceAdminImpl implements UserService {
         }
         userProjectList.add(project);
         user.setProjects(userProjectList);
-        userRepo.save(user);
+        userRepo.update(user);
         return "User " + email + " assigned to project '" + project.getName() + "' with id '" + project.getId() + "'.";
 
     }

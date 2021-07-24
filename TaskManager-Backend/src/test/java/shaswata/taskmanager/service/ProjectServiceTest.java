@@ -19,9 +19,9 @@ import shaswata.taskmanager.model.Project;
 import shaswata.taskmanager.model.Task;
 import shaswata.taskmanager.model.TaskStatus;
 import shaswata.taskmanager.model.UserAccount;
-import shaswata.taskmanager.repository.ProjectRepository;
-import shaswata.taskmanager.repository.TaskRepository;
-import shaswata.taskmanager.repository.UserRepository;
+import shaswata.taskmanager.repository.hibernate.ProjectDAO;
+import shaswata.taskmanager.repository.hibernate.TaskDAO;
+import shaswata.taskmanager.repository.hibernate.UserDAO;
 import shaswata.taskmanager.service.project.ProjectServiceAdminImpl;
 import shaswata.taskmanager.service.project.ProjectServiceUserImpl;
 
@@ -39,11 +39,11 @@ import static org.mockito.Mockito.*;
 public class ProjectServiceTest {
 
     @Mock
-    ProjectRepository projectRepo;
+    ProjectDAO projectRepo;
     @Mock
-    TaskRepository taskRepo;
+    TaskDAO taskRepo;
     @Mock
-    UserRepository userRepo;
+    UserDAO userRepo;
 
     @InjectMocks
     ProjectServiceAdminImpl adminService;
@@ -151,7 +151,7 @@ public class ProjectServiceTest {
 
 
 
-        lenient().when(projectRepo.findProjectById(anyLong())).thenAnswer((InvocationOnMock invocation) -> {
+        lenient().when(projectRepo.findById(anyLong())).thenAnswer((InvocationOnMock invocation) -> {
             if (invocation.getArgument(0).equals(PROJECT1_ID)) {
                 List<Task> taskList = new ArrayList<>();
 
@@ -185,9 +185,11 @@ public class ProjectServiceTest {
         });
 
 
-        lenient().when(taskRepo.save(any(Task.class))).thenAnswer((InvocationOnMock invocation) -> invocation.getArgument(0));
-        lenient().when(projectRepo.save(any(Project.class))).thenAnswer((InvocationOnMock invocation) -> invocation.getArgument(0));
+        lenient().when(taskRepo.create(any(Task.class))).thenAnswer((InvocationOnMock invocation) -> invocation.getArgument(0));
+        lenient().when(projectRepo.create(any(Project.class))).thenAnswer((InvocationOnMock invocation) -> invocation.getArgument(0));
 
+        lenient().when(taskRepo.update(any(Task.class))).thenAnswer((InvocationOnMock invocation) -> invocation.getArgument(0));
+        lenient().when(projectRepo.update(any(Project.class))).thenAnswer((InvocationOnMock invocation) -> invocation.getArgument(0));
     }
 
 
@@ -240,7 +242,7 @@ public class ProjectServiceTest {
     public void testDeleteProject() {
         try {
             userService.deleteProject(PROJECT1_ID, CURRENT_USER);
-            verify(projectRepo, times(1)).deleteProjectById(any());
+            verify(projectRepo, times(1)).deleteById(any());
             verify(userRepo, times(1)).findAll();
 
         } catch (Exception e) {

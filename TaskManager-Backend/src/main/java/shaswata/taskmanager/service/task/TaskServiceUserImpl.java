@@ -12,9 +12,9 @@ import shaswata.taskmanager.model.Project;
 import shaswata.taskmanager.model.Task;
 import shaswata.taskmanager.model.TaskStatus;
 import shaswata.taskmanager.model.UserAccount;
-import shaswata.taskmanager.repository.ProjectRepository;
-import shaswata.taskmanager.repository.TaskRepository;
-import shaswata.taskmanager.repository.UserRepository;
+import shaswata.taskmanager.repository.hibernate.ProjectDAO;
+import shaswata.taskmanager.repository.hibernate.TaskDAO;
+import shaswata.taskmanager.repository.hibernate.UserDAO;
 
 import javax.transaction.Transactional;
 import java.sql.Date;
@@ -26,9 +26,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TaskServiceUserImpl implements TaskService {
 
-    private final ProjectRepository projectRepo;
-    private final TaskRepository taskRepo;
-    private final UserRepository userRepo;
+    private final ProjectDAO projectRepo;
+    private final TaskDAO taskRepo;
+    private final UserDAO userRepo;
 
 
     @Transactional
@@ -40,7 +40,7 @@ public class TaskServiceUserImpl implements TaskService {
         }
 
         Task task = new Task();
-        Project project = projectRepo.findProjectById(taskDto.getProjectId());
+        Project project = projectRepo.findById(taskDto.getProjectId());
         if(project == null){
             throw new ResourceNotFoundException("A task can only be created in an existing project!");
         }
@@ -57,12 +57,12 @@ public class TaskServiceUserImpl implements TaskService {
         task.setDescription(taskDto.getDescription());
         task.setStatus(taskDto.getStatus());
         task.setDueDate(taskDto.getDueDate());
-        task = taskRepo.save(task);
+        task = taskRepo.create(task);
 
         List<Task> taskList = project.getTasks();
         taskList.add(task);
         project.setTasks(taskList);
-        projectRepo.save(project);
+        projectRepo.update(project);
 
         TaskDto returnDto = TaskService.taskToDTO(task);
         return returnDto;
@@ -76,7 +76,7 @@ public class TaskServiceUserImpl implements TaskService {
         if(id == null){
             throw new InvalidInputException("Task ID cannot be empty!");
         }
-        Task task = taskRepo.findTaskById(id);
+        Task task = taskRepo.findById(id);
         if(task == null){
             throw new ResourceNotFoundException("Task with given ID not found");
         }
@@ -92,7 +92,7 @@ public class TaskServiceUserImpl implements TaskService {
         task.setDescription(taskDto.getDescription());
         task.setStatus(taskDto.getStatus());
         task.setDueDate(taskDto.getDueDate());
-        task = taskRepo.save(task);
+        task = taskRepo.update(task);
 
         return TaskService.taskToDTO(task);
     }
@@ -110,7 +110,7 @@ public class TaskServiceUserImpl implements TaskService {
             throw new AccessDeniedException("Not a valid user of this task");
         }
 
-        Task task = taskRepo.findTaskById(id);
+        Task task = taskRepo.findById(id);
         if(task == null){
             throw new ResourceNotFoundException("Task with given ID not found");
         }
@@ -144,7 +144,7 @@ public class TaskServiceUserImpl implements TaskService {
             throw new AccessDeniedException("Not a valid user of this project");
         }
 
-        Project project = projectRepo.findProjectById(projectId);
+        Project project = projectRepo.findById(projectId);
         if(project == null){
             throw new ResourceNotFoundException("Project with id'" + projectId + "' not found!");
         }
@@ -218,7 +218,7 @@ public class TaskServiceUserImpl implements TaskService {
     private boolean validUserOfTask(String username, Long id){
         UserAccount user = userRepo.findUserAccountByEmail(username);
         List<Task> userTaskList = user.getTasks();
-        Task task = taskRepo.findTaskById(id);
+        Task task = taskRepo.findById(id);
         if(task != null && userTaskList != null){
             if(userTaskList.contains(task)){
                 return true;
@@ -230,7 +230,7 @@ public class TaskServiceUserImpl implements TaskService {
     private boolean validUserOfProject(String username, Long projectId){
         UserAccount user = userRepo.findUserAccountByEmail(username);
         List<Project> userProjectList = user.getProjects();
-        Project project = projectRepo.findProjectById(projectId);
+        Project project = projectRepo.findById(projectId);
         if(project != null && userProjectList != null){
             if(userProjectList.contains(project)){
                 return true;

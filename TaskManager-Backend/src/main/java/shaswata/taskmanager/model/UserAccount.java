@@ -11,7 +11,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-@Table(uniqueConstraints = @UniqueConstraint(columnNames={"email"}))
+@Table(name = "User_Account", uniqueConstraints = @UniqueConstraint(columnNames={"email"}))
 public class UserAccount extends Account{
 
     @Id
@@ -23,6 +23,9 @@ public class UserAccount extends Account{
 
     @ManyToMany(targetEntity = Task.class, fetch = FetchType.LAZY)
     private List<Task> tasks;
+
+    @Version
+    private Long version;
 
 
 }

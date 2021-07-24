@@ -6,11 +6,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import shaswata.taskmanager.common.ApplicationUserRole;
 import shaswata.taskmanager.model.AdminAccount;
 import shaswata.taskmanager.model.UserAccount;
-import shaswata.taskmanager.repository.AdminRepository;
-import shaswata.taskmanager.repository.UserRepository;
-import shaswata.taskmanager.common.ApplicationUserRole;
+import shaswata.taskmanager.repository.hibernate.AdminDAO;
+import shaswata.taskmanager.repository.hibernate.UserDAO;
 
 
 @Service
@@ -18,8 +18,8 @@ import shaswata.taskmanager.common.ApplicationUserRole;
 public class MyUserDetailsService implements UserDetailsService {
 
 
-    private final UserRepository userRepository;
-    private final AdminRepository adminRepository;
+    private final UserDAO userRepository;
+    private final AdminDAO adminRepository;
 
 
     @Override

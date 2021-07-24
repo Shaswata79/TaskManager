@@ -11,9 +11,9 @@ import shaswata.taskmanager.exception.ResourceNotFoundException;
 import shaswata.taskmanager.model.Project;
 import shaswata.taskmanager.model.Task;
 import shaswata.taskmanager.model.UserAccount;
-import shaswata.taskmanager.repository.ProjectRepository;
-import shaswata.taskmanager.repository.TaskRepository;
-import shaswata.taskmanager.repository.UserRepository;
+import shaswata.taskmanager.repository.hibernate.ProjectDAO;
+import shaswata.taskmanager.repository.hibernate.TaskDAO;
+import shaswata.taskmanager.repository.hibernate.UserDAO;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
@@ -25,9 +25,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProjectServiceUserImpl implements ProjectService {
 
-    private final ProjectRepository projectRepo;
-    private final TaskRepository taskRepo;
-    private final UserRepository userRepo;
+    private final ProjectDAO projectRepo;
+    private final TaskDAO taskRepo;
+    private final UserDAO userRepo;
 
 
     @Transactional
@@ -42,7 +42,7 @@ public class ProjectServiceUserImpl implements ProjectService {
         Project project = new Project();
         project.setName(name);
         project.setTasks(taskList);
-        project = projectRepo.save(project);
+        project = projectRepo.create(project);
 
         if (dto.getTasks() != null) {
             for (TaskDto taskDto : dto.getTasks()) {
@@ -51,12 +51,12 @@ public class ProjectServiceUserImpl implements ProjectService {
                 task.setStatus(taskDto.getStatus());
                 task.setDueDate(taskDto.getDueDate());
                 task.setProject(project);
-                taskRepo.save(task);
+                taskRepo.create(task);
 
                 taskList.add(task);
             }
             project.setTasks(taskList);
-            project = projectRepo.save(project);
+            project = projectRepo.update(project);
         }
 
         //assign current user to project
@@ -64,7 +64,7 @@ public class ProjectServiceUserImpl implements ProjectService {
         List<Project> userProjectList = user.getProjects();
         userProjectList.add(project);
         user.setProjects(userProjectList);
-        userRepo.save(user);
+        userRepo.update(user);
 
         return ProjectService.projectToDTO(project);
     }
@@ -96,7 +96,7 @@ public class ProjectServiceUserImpl implements ProjectService {
 
         UserAccount user = userRepo.findUserAccountByEmail(currentUser.getUsername());
         List<Project> userProjectList = user.getProjects();
-        Project project = projectRepo.findProjectById(id);
+        Project project = projectRepo.findById(id);
 
         if ((project == null) || (userProjectList == null)) {
             throw new ResourceNotFoundException("Project with id '" + id + "' not found!");
@@ -108,18 +108,18 @@ public class ProjectServiceUserImpl implements ProjectService {
                 //remove the project
                 if (thisUser.getProjects().contains(project)) {
                     thisUser.getProjects().remove(project);
-                    thisUser = userRepo.save(thisUser);
+                    thisUser = userRepo.update(thisUser);
 
                     //remove the tasks of this project from all users
                     for (Task task : project.getTasks()) {
                         if (thisUser.getTasks().contains(task)) {
                             thisUser.getTasks().remove(task);
-                            thisUser = userRepo.save(thisUser);
+                            thisUser = userRepo.update(thisUser);
                         }
                     }
                 }
             }
-            projectRepo.deleteProjectById(id);
+            projectRepo.deleteById(id);
 
         } else {
             throw new AccessDeniedException("User can only delete own projects");

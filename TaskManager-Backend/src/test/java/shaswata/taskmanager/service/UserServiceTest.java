@@ -16,9 +16,9 @@ import shaswata.taskmanager.model.Project;
 import shaswata.taskmanager.model.Task;
 import shaswata.taskmanager.model.TaskStatus;
 import shaswata.taskmanager.model.UserAccount;
-import shaswata.taskmanager.repository.ProjectRepository;
-import shaswata.taskmanager.repository.TaskRepository;
-import shaswata.taskmanager.repository.UserRepository;
+import shaswata.taskmanager.repository.hibernate.ProjectDAO;
+import shaswata.taskmanager.repository.hibernate.TaskDAO;
+import shaswata.taskmanager.repository.hibernate.UserDAO;
 import shaswata.taskmanager.service.user.UserServiceAdminImpl;
 import shaswata.taskmanager.service.user.UserServiceUserImpl;
 
@@ -33,11 +33,11 @@ import static org.mockito.Mockito.lenient;
 public class UserServiceTest {
 
     @Mock
-    UserRepository userRepo;
+    UserDAO userRepo;
     @Mock
-    TaskRepository taskRepo;
+    TaskDAO taskRepo;
     @Mock
-    ProjectRepository projectRepo;
+    ProjectDAO projectRepo;
     @Mock
     PasswordEncoder passwordEncoder;
 
@@ -153,7 +153,7 @@ public class UserServiceTest {
         });
 
 
-        lenient().when(taskRepo.findTaskById(anyLong())).thenAnswer((InvocationOnMock invocation) -> {
+        lenient().when(taskRepo.findById(anyLong())).thenAnswer((InvocationOnMock invocation) -> {
             if (invocation.getArgument(0).equals(TASK2_ID)) {
                 PROJECT.setName(PROJECT_NAME);
                 PROJECT.setId(PROJECT_ID);
@@ -178,7 +178,7 @@ public class UserServiceTest {
 
 
 
-        lenient().when(projectRepo.findProjectById(anyLong())).thenAnswer((InvocationOnMock invocation) -> {
+        lenient().when(projectRepo.findById(anyLong())).thenAnswer((InvocationOnMock invocation) -> {
             if (invocation.getArgument(0).equals(PROJECT_ID)) {
                 PROJECT.setName(PROJECT_NAME);
                 PROJECT.setId(PROJECT_ID);
@@ -200,7 +200,8 @@ public class UserServiceTest {
 
         });
 
-        lenient().when(userRepo.save(any(UserAccount.class))).thenAnswer((InvocationOnMock invocation) -> invocation.getArgument(0));
+        lenient().when(userRepo.create(any(UserAccount.class))).thenAnswer((InvocationOnMock invocation) -> invocation.getArgument(0));
+        lenient().when(userRepo.update(any(UserAccount.class))).thenAnswer((InvocationOnMock invocation) -> invocation.getArgument(0));
 
     }
 

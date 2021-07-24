@@ -10,12 +10,15 @@ import javax.persistence.*;
 @Entity
 @Getter
 @Setter
-@Table(uniqueConstraints = @UniqueConstraint(columnNames={"email"}))
+@Table(name = "Admin_Account", uniqueConstraints = @UniqueConstraint(columnNames={"email"}))
 public class AdminAccount extends Account{
 
     @Id
     @GeneratedValue
     private Long id;
+
+    @Version
+    private Long version;
 
 }
 

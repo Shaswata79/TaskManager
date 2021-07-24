@@ -1,5 +1,9 @@
-package shaswata.taskmanager.repository;
 
+
+package shaswata.taskmanager.repository.springdatajpa;
+
+
+/*
 import org.springframework.data.jpa.repository.JpaRepository;
 
 
@@ -19,3 +23,7 @@ public interface AdminRepository extends JpaRepository<AdminAccount, String> {
 
     void deleteAll();
 }
+
+
+ */
+

@@ -13,14 +13,13 @@ import shaswata.taskmanager.model.AdminAccount;
 import shaswata.taskmanager.model.Project;
 import shaswata.taskmanager.model.Task;
 import shaswata.taskmanager.model.UserAccount;
-import shaswata.taskmanager.repository.AdminRepository;
-import shaswata.taskmanager.repository.UserRepository;
+import shaswata.taskmanager.repository.hibernate.AdminDAO;
+import shaswata.taskmanager.repository.hibernate.UserDAO;
 import shaswata.taskmanager.service.project.ProjectService;
 import shaswata.taskmanager.service.task.TaskService;
 import shaswata.taskmanager.service.user.UserService;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,8 +30,8 @@ public class AdminServiceImpl implements AdminService {
     //Admin exclusive services
 
 
-    private final UserRepository userRepo;
-    private final AdminRepository adminRepo;
+    private final UserDAO userRepo;
+    private final AdminDAO adminRepo;
     private final PasswordEncoder passwordEncoder;
 
 
@@ -108,7 +107,7 @@ public class AdminServiceImpl implements AdminService {
         admin.setEmail(dto.getEmail());
         admin.setPassword(passwordEncoder.encode(dto.getPassword()));
 
-        adminRepo.save(admin);
+        adminRepo.create(admin);
         return AdminService.adminToDTO(admin);
     }
 

@@ -1,7 +1,6 @@
 package shaswata.taskmanager.repository;
 
 
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import shaswata.taskmanager.model.AdminAccount;
+import shaswata.taskmanager.repository.hibernate.AdminDAO;
 
 import javax.transaction.Transactional;
 
@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class AdminRepositoryTest {
 
     @Autowired
-    AdminRepository adminRepo;
+    AdminDAO adminRepo;
 
 
     @BeforeEach
@@ -44,7 +44,7 @@ public class AdminRepositoryTest {
         admin.setPassword(password);
 
         //save to database
-        adminRepo.save(admin);
+        adminRepo.create(admin);
 
 
         admin = null;
@@ -74,7 +74,7 @@ public class AdminRepositoryTest {
         admin.setPassword(password);
 
         // save admin in database
-        adminRepo.save(admin);
+        adminRepo.create(admin);
 
         admin = null;
         admin = adminRepo.findAdminAccountByEmail(email);

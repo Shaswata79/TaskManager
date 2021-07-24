@@ -25,4 +25,7 @@ public class Task {
 
     private Date dueDate;
 
+    @Version
+    private Long version;
+
 }

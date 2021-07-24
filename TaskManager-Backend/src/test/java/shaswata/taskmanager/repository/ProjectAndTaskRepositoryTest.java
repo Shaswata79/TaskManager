@@ -10,6 +10,8 @@ import org.springframework.test.context.ActiveProfiles;
 import shaswata.taskmanager.model.Project;
 import shaswata.taskmanager.model.Task;
 import shaswata.taskmanager.model.TaskStatus;
+import shaswata.taskmanager.repository.hibernate.ProjectDAO;
+import shaswata.taskmanager.repository.hibernate.TaskDAO;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
@@ -24,17 +26,17 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ProjectAndTaskRepositoryTest {
 
     @Autowired
-    ProjectRepository projectRepo;
+    ProjectDAO projectRepo;
 
     @Autowired
-    TaskRepository taskRepo;
+    TaskDAO taskRepo;
 
 
     @BeforeEach
     @AfterEach
     public void clearDatabase() {
-        projectRepo.deleteAll();
         taskRepo.deleteAll();
+        projectRepo.deleteAll();
     }
 
 
@@ -45,27 +47,27 @@ public class ProjectAndTaskRepositoryTest {
         project.setName("Task Manager");
         List<Task> taskList = new ArrayList<>();
         project.setTasks(taskList);
-        project = projectRepo.save(project);
+        project = projectRepo.create(project);
         Long projectID = project.getId();
 
         Task task1 = new Task();
         task1.setDescription("Create backend");
         task1.setStatus(TaskStatus.open);
         task1.setProject(project);
-        taskRepo.save(task1);
+        taskRepo.create(task1);
         Long task1ID = task1.getId();
 
         Task task2 = new Task();
         task2.setDescription("Create frontend");
         task2.setStatus(TaskStatus.inProgress);
         task2.setProject(project);
-        taskRepo.save(task2);
+        taskRepo.create(task2);
 
         taskList = project.getTasks();
         taskList.add(task1);
         taskList.add(task2);
         project.setTasks(taskList);
-        projectRepo.save(project);
+        projectRepo.update(project);
 
 
         project = null;
@@ -74,14 +76,14 @@ public class ProjectAndTaskRepositoryTest {
 
 
         //Load from Database
-        project = projectRepo.findProjectById(projectID);
+        project = projectRepo.findById(projectID);
         assertNotNull(project);
         assertEquals("Task Manager", project.getName());
         assertEquals(2, project.getTasks().size());
         assertEquals("Create backend", project.getTasks().get(0).getDescription());
         assertEquals("Create frontend", project.getTasks().get(1).getDescription());
 
-        task1 = taskRepo.findTaskById(task1ID);
+        task1 = taskRepo.findById(task1ID);
         assertNotNull(task1);
         assertEquals("Create backend", task1.getDescription());
 
@@ -96,20 +98,20 @@ public class ProjectAndTaskRepositoryTest {
         project.setId(1L);
         List<Task> taskList = new ArrayList<>();
         project.setTasks(taskList);
-        project = projectRepo.save(project);
+        project = projectRepo.create(project);
         Long projectID = project.getId();
 
         Task task = new Task();
         task.setDescription("Create backend");
         task.setStatus(TaskStatus.open);
         task.setProject(project);
-        task = taskRepo.save(task);
+        task = taskRepo.create(task);
         Long taskID = task.getId();
 
         taskList = project.getTasks();
         taskList.add(task);
         project.setTasks(taskList);
-        projectRepo.save(project);
+        projectRepo.update(project);
 
 
         project = null;
@@ -117,22 +119,22 @@ public class ProjectAndTaskRepositoryTest {
 
 
         //Load from Database before delete
-        project = projectRepo.findProjectById(projectID);
+        project = projectRepo.findById(projectID);
         assertNotNull(project);
         assertEquals("Task Manager", project.getName());
         assertEquals("Create backend", project.getTasks().get(0).getDescription());
 
 
         //delete project
-        projectRepo.deleteProjectById(projectID);
+        projectRepo.deleteById(projectID);
 
 
         //try loading project from db
-        project = projectRepo.findProjectById(projectID);
+        project = projectRepo.findById(projectID);
         assertNull(project);
 
         //deleting project should also delete tasks in project
-        task = taskRepo.findTaskById(taskID);
+        task = taskRepo.findById(taskID);
         assertNull(task);
 
     }
@@ -146,28 +148,28 @@ public class ProjectAndTaskRepositoryTest {
         project.setId(1L);
         List<Task> taskList = new ArrayList<>();
         project.setTasks(taskList);
-        project = projectRepo.save(project);
+        project = projectRepo.create(project);
         Long projectID = project.getId();
 
         Task task1 = new Task();
         task1.setDescription("Create backend");
         task1.setStatus(TaskStatus.open);
         task1.setProject(project);
-        taskRepo.save(task1);
+        taskRepo.create(task1);
 
 
         Task task2 = new Task();
         task2.setDescription("Create frontend");
         task2.setStatus(TaskStatus.inProgress);
         task2.setProject(project);
-        task2 = taskRepo.save(task2);
+        task2 = taskRepo.create(task2);
         Long task2ID = task2.getId();
 
         taskList = project.getTasks();
         taskList.add(task1);
         taskList.add(task2);
         project.setTasks(taskList);
-        projectRepo.save(project);
+        projectRepo.update(project);
 
 
         project = null;
@@ -176,14 +178,14 @@ public class ProjectAndTaskRepositoryTest {
 
 
         //Load from Database before delete
-        project = projectRepo.findProjectById(projectID);
+        project = projectRepo.findById(projectID);
         assertNotNull(project);
         assertEquals("Task Manager", project.getName());
         assertEquals(2, project.getTasks().size());
         assertEquals("Create backend", project.getTasks().get(0).getDescription());
         assertEquals("Create frontend", project.getTasks().get(1).getDescription());
 
-        task2 = taskRepo.findTaskById(task2ID);
+        task2 = taskRepo.findById(task2ID);
         assertNotNull(task2);
         assertEquals("Create frontend", task2.getDescription());
 
@@ -192,11 +194,11 @@ public class ProjectAndTaskRepositoryTest {
         newTaskList.remove(task2);      //for a task to be successfully removed all its references must be removed
         //project.setTasks(newTaskList);
         taskRepo.deleteById(task2ID);
-        task2 = taskRepo.findTaskById(task2ID);
+        task2 = taskRepo.findById(task2ID);
         assertNull(task2);
 
 
-        project = projectRepo.findProjectById(projectID);
+        project = projectRepo.findById(projectID);
         assertNotNull(project);
         assertEquals("Task Manager", project.getName());
         assertEquals("Create backend", project.getTasks().get(0).getDescription());
@@ -212,27 +214,27 @@ public class ProjectAndTaskRepositoryTest {
         project.setId(1L);
         List<Task> taskList = new ArrayList<>();
         project.setTasks(taskList);
-        project = projectRepo.save(project);
+        project = projectRepo.create(project);
 
         Task task1 = new Task();
         task1.setDescription("Create backend");
         task1.setStatus(TaskStatus.open);
         task1.setProject(project);
-        taskRepo.save(task1);
+        taskRepo.create(task1);
 
 
         Task task2 = new Task();
         task2.setDescription("Create frontend");
         task2.setStatus(TaskStatus.inProgress);
         task2.setProject(project);
-        task2 = taskRepo.save(task2);
+        task2 = taskRepo.create(task2);
         Long task2ID = task2.getId();
 
         taskList = project.getTasks();
         taskList.add(task1);
         taskList.add(task2);
         project.setTasks(taskList);
-        project = projectRepo.save(project);
+        project = projectRepo.update(project);
 
         task1 = null;
         task2 = null;
@@ -255,44 +257,44 @@ public class ProjectAndTaskRepositoryTest {
         project1.setName("Task Manager");
         List<Task> taskList1 = new ArrayList<>();
         project1.setTasks(taskList1);
-        project1 = projectRepo.save(project1);
+        project1 = projectRepo.create(project1);
 
         Task task1 = new Task();
         task1.setDescription("Create backend");
         task1.setStatus(TaskStatus.open);
         task1.setProject(project1);
-        taskRepo.save(task1);
+        taskRepo.create(task1);
 
         Task task2 = new Task();
         task2.setDescription("Create frontend");
         task2.setStatus(TaskStatus.inProgress);
         task2.setProject(project1);
-        task2 = taskRepo.save(task2);
+        task2 = taskRepo.create(task2);
         Long task2ID = task2.getId();
 
         taskList1 = project1.getTasks();
         taskList1.add(task1);
         taskList1.add(task2);
         project1.setTasks(taskList1);
-        project1 = projectRepo.save(project1);
+        project1 = projectRepo.update(project1);
 
 
         Project project2 = new Project();
         project2.setName("Mobile App");
         List<Task> taskList2 = new ArrayList<>();
         project2.setTasks(taskList2);
-        project2 = projectRepo.save(project2);
+        project2 = projectRepo.create(project2);
 
         Task task3 = new Task();
         task3.setDescription("Create mobile frontend");
         task3.setStatus(TaskStatus.open);
         task3.setProject(project2);
-        taskRepo.save(task3);
+        taskRepo.create(task3);
 
         taskList2 = project2.getTasks();
         taskList2.add(task3);
         project2.setTasks(taskList2);
-        project2 = projectRepo.save(project2);
+        project2 = projectRepo.update(project2);
 
         task1 = null;
         task2 = null;

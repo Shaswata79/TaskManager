@@ -21,5 +21,7 @@ public class Project {
     @OneToMany(targetEntity = Task.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "project")
     private List<Task> tasks;
 
+    @Version    //for optimistic locking
+    private Long version;
 
 }

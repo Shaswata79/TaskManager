@@ -27,6 +27,7 @@ public interface ProjectService {
     static ProjectDto projectToDTO(Project project){
         ProjectDto projectDto = new ProjectDto();
         projectDto.setName(project.getName());
+        projectDto.setProjectId(project.getId());
         List<TaskDto> taskDtoList = new ArrayList<>();
 
         for(Task task : project.getTasks()){

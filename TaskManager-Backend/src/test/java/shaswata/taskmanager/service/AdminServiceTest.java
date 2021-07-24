@@ -14,9 +14,9 @@ import shaswata.taskmanager.model.Project;
 import shaswata.taskmanager.model.Task;
 import shaswata.taskmanager.model.TaskStatus;
 import shaswata.taskmanager.model.UserAccount;
-import shaswata.taskmanager.repository.ProjectRepository;
-import shaswata.taskmanager.repository.TaskRepository;
-import shaswata.taskmanager.repository.UserRepository;
+import shaswata.taskmanager.repository.hibernate.ProjectDAO;
+import shaswata.taskmanager.repository.hibernate.TaskDAO;
+import shaswata.taskmanager.repository.hibernate.UserDAO;
 import shaswata.taskmanager.service.admin.AdminServiceImpl;
 
 import java.util.ArrayList;
@@ -32,11 +32,11 @@ import static org.mockito.Mockito.lenient;
 public class AdminServiceTest {
 
     @Mock
-    ProjectRepository projectRepo;
+    ProjectDAO projectRepo;
     @Mock
-    TaskRepository taskRepo;
+    TaskDAO taskRepo;
     @Mock
-    UserRepository userRepo;
+    UserDAO userRepo;
 
     @InjectMocks
     AdminServiceImpl adminService;
@@ -164,7 +164,7 @@ public class AdminServiceTest {
 
 
 
-        lenient().when(projectRepo.findProjectById(anyLong())).thenAnswer((InvocationOnMock invocation) -> {
+        lenient().when(projectRepo.findById(anyLong())).thenAnswer((InvocationOnMock invocation) -> {
             if (invocation.getArgument(0).equals(PROJECT1_ID)) {
                 List<Task> taskList = new ArrayList<>();
 
@@ -198,9 +198,11 @@ public class AdminServiceTest {
         });
 
 
-        lenient().when(taskRepo.save(any(Task.class))).thenAnswer((InvocationOnMock invocation) -> invocation.getArgument(0));
-        lenient().when(projectRepo.save(any(Project.class))).thenAnswer((InvocationOnMock invocation) -> invocation.getArgument(0));
+        lenient().when(taskRepo.create(any(Task.class))).thenAnswer((InvocationOnMock invocation) -> invocation.getArgument(0));
+        lenient().when(projectRepo.create(any(Project.class))).thenAnswer((InvocationOnMock invocation) -> invocation.getArgument(0));
 
+        lenient().when(taskRepo.update(any(Task.class))).thenAnswer((InvocationOnMock invocation) -> invocation.getArgument(0));
+        lenient().when(projectRepo.update(any(Project.class))).thenAnswer((InvocationOnMock invocation) -> invocation.getArgument(0));
     }
 
 

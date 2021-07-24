@@ -11,9 +11,11 @@ import shaswata.taskmanager.model.Project;
 import shaswata.taskmanager.model.Task;
 import shaswata.taskmanager.model.TaskStatus;
 import shaswata.taskmanager.model.UserAccount;
+import shaswata.taskmanager.repository.hibernate.ProjectDAO;
+import shaswata.taskmanager.repository.hibernate.TaskDAO;
+import shaswata.taskmanager.repository.hibernate.UserDAO;
 
 import javax.transaction.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,21 +29,21 @@ import static org.junit.jupiter.api.Assertions.*;
 public class UserRepositoryTest {
 
     @Autowired
-    UserRepository userRepo;
+    UserDAO userRepo;
 
     @Autowired
-    ProjectRepository projectRepo;
+    ProjectDAO projectRepo;
 
     @Autowired
-    TaskRepository taskRepo;
+    TaskDAO taskRepo;
 
 
     @BeforeEach
     @AfterEach
     public void clearDatabase() {
         userRepo.deleteAll();
-        projectRepo.deleteAll();
         taskRepo.deleteAll();
+        projectRepo.deleteAll();
     }
 
 
@@ -59,7 +61,7 @@ public class UserRepositoryTest {
         user.setPassword(password);
 
         //save to database
-        userRepo.save(user);
+        userRepo.create(user);
 
 
         user = null;
@@ -90,7 +92,7 @@ public class UserRepositoryTest {
         user.setPassword(password);
 
         // save user in database
-        userRepo.save(user);
+        userRepo.create(user);
 
         user = null;
         user = userRepo.findUserAccountByEmail(email);
@@ -111,21 +113,21 @@ public class UserRepositoryTest {
     public void testPersistAndLoadUserTasks(){
         Project project = new Project();
         project.setName("TaskManager");
-        projectRepo.save(project);
+        projectRepo.create(project);
         List<Task> projectTasks = new ArrayList<>();
         project.setTasks(projectTasks);
-        project = projectRepo.save(project);
+        project = projectRepo.update(project);
 
         Task task1 = new Task();
         task1.setDescription("Create backend");
         task1.setStatus(TaskStatus.open);
         task1.setProject(project);
-        taskRepo.save(task1);
+        taskRepo.create(task1);
 
         projectTasks = project.getTasks();
         projectTasks.add(task1);
         project.setTasks(projectTasks);
-        projectRepo.save(project);
+        projectRepo.update(project);
 
         //create user
         String name = "New User";
@@ -144,7 +146,7 @@ public class UserRepositoryTest {
         user.setTasks(userTasks);
         user.setProjects(userProjects);
 
-        userRepo.save(user);
+        userRepo.create(user);
 
 
         user = null;
@@ -172,7 +174,7 @@ public class UserRepositoryTest {
         user1.setName(userName1);
         user1.setEmail(userEmail1);
         user1.setPassword(userPassword1);
-        userRepo.save(user1);
+        userRepo.create(user1);
 
 
         String userName2 = "TestUser2";
@@ -184,7 +186,7 @@ public class UserRepositoryTest {
         user2.setName(userName2);
         user2.setEmail(userEmail2);
         user2.setPassword(userPassword2);
-        userRepo.save(user2);
+        userRepo.create(user2);
 
 
         List<UserAccount> userList = userRepo.findAll();

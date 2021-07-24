@@ -10,9 +10,9 @@ import shaswata.taskmanager.exception.ResourceNotFoundException;
 import shaswata.taskmanager.model.Project;
 import shaswata.taskmanager.model.Task;
 import shaswata.taskmanager.model.UserAccount;
-import shaswata.taskmanager.repository.ProjectRepository;
-import shaswata.taskmanager.repository.TaskRepository;
-import shaswata.taskmanager.repository.UserRepository;
+import shaswata.taskmanager.repository.hibernate.ProjectDAO;
+import shaswata.taskmanager.repository.hibernate.TaskDAO;
+import shaswata.taskmanager.repository.hibernate.UserDAO;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
@@ -24,9 +24,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProjectServiceAdminImpl implements ProjectService {
 
-    private final ProjectRepository projectRepo;
-    private final TaskRepository taskRepo;
-    private final UserRepository userRepo;
+    private final ProjectDAO projectRepo;
+    private final TaskDAO taskRepo;
+    private final UserDAO userRepo;
 
 
     @Transactional
@@ -41,7 +41,7 @@ public class ProjectServiceAdminImpl implements ProjectService {
         Project project = new Project();
         project.setName(name);
         project.setTasks(taskList);
-        project = projectRepo.save(project);
+        project = projectRepo.create(project);
 
         if(dto.getTasks() != null){
             for(TaskDto taskDto : dto.getTasks()){
@@ -50,12 +50,12 @@ public class ProjectServiceAdminImpl implements ProjectService {
                 task.setStatus(taskDto.getStatus());
                 task.setDueDate(taskDto.getDueDate());
                 task.setProject(project);
-                taskRepo.save(task);
+                taskRepo.create(task);
 
                 taskList.add(task);
             }
             project.setTasks(taskList);
-            project = projectRepo.save(project);
+            project = projectRepo.update(project);
         }
 
         return ProjectService.projectToDTO(project);
@@ -81,7 +81,7 @@ public class ProjectServiceAdminImpl implements ProjectService {
         if(id == null){
             throw new InvalidInputException("Project id cannot be empty!");
         }
-        Project project = projectRepo.findProjectById(id);
+        Project project = projectRepo.findById(id);
         if(project == null){
             throw new ResourceNotFoundException("Project with id'" + id + "' not found!");
         }
@@ -93,7 +93,7 @@ public class ProjectServiceAdminImpl implements ProjectService {
         deleteUserProjects(project);
 
         //finally delete the project from repo
-        projectRepo.deleteProjectById(id);
+        projectRepo.deleteById(id);
         return "Project with id '" + id + "' was deleted.";
     }
 
@@ -103,7 +103,7 @@ public class ProjectServiceAdminImpl implements ProjectService {
             List<Task> userTaskList = user.getTasks();
             userTaskList.remove(task);
             user.setTasks(userTaskList);
-            userRepo.save(user);
+            userRepo.update(user);
         }
     }
 
@@ -112,7 +112,7 @@ public class ProjectServiceAdminImpl implements ProjectService {
             List<Project> userProjectList = user.getProjects();
             userProjectList.remove(project);
             user.setProjects(userProjectList);
-            userRepo.save(user);
+            userRepo.update(user);
         }
     }
 

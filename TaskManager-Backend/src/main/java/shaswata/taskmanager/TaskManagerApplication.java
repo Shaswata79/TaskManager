@@ -17,7 +17,7 @@ public class TaskManagerApplication {
 	@RequestMapping("/foo")
 	public String home() {
 		return "Hello Docker World";
-	}
+	}	//for testing
 
 	public static void main(String[] args) {
 		SpringApplication.run(TaskManagerApplication.class, args);

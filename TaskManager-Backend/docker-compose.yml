@@ -1,6 +1,10 @@
+
+
 version: '3'
 
 services:
+
+  #Back-end Spring Boot Application
   app:
     image: 'taskmanager-backend:latest'
     build:
@@ -8,6 +12,8 @@ services:
     container_name: taskmanager-api
     depends_on:
       - db
+
+    #Environment variables for Spring Boot Application.
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/compose-postgres
       - SPRING_DATASOURCE_USERNAME=compose-postgres
@@ -18,14 +24,26 @@ services:
       - SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL=true
       - SPRING_DATASOURCE_DRIVER-CLASS-NAME=org.postgresql.Driver
     ports:
-      - 8080:8080
+      - 8080:8080       #forward container port 8080 to localhost:8080
 
+
+  #PostgreSQL Database for the application
   db:
     image: 'postgres:13.1-alpine'
     container_name: db
+    volumes:
+      - data-volume:/var/lib/postgresql/data
     ports:
-      - 5432:5432
+      - 5432:5432       # Forward the container port 5432 localhost:5432
+
+    #Environment variable for DB name, user and password
     environment:
       - POSTGRES_DB=compose-postgres
       - POSTGRES_USER=compose-postgres
       - POSTGRES_PASSWORD=compose-postgres
+
+
+
+#Volumes for DB data
+volumes:
+  data-volume:

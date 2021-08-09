@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: taskmanager-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: taskmanager-app
+  template:
+    metadata:
+      labels:
+        app: taskmanager-app
+    spec:
+      containers:
+      - name: taskmanager-app
+        image: shaswata79/taskmanager-backend:app
+        imagePullPolicy: Always
+        env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://taskmanager-data-svc:5432/
+            - name: POSTGRES_USER
+              value: theTaskMaster332
+            - name: POSTGRES_PASSWORD
+              value: brucewayne123
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: taskmanager-svc
+spec:
+  selector:
+    app: taskmanager-app
+  ports:
+  - port: 80
+    targetPort: 8080
+  type: LoadBalancer

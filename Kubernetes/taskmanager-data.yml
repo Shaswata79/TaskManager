@@ -20,13 +20,11 @@ spec:
           volumeMounts:
             - name: postgresql-db-disk
               mountPath: /data
-          env:
-            - name: POSTGRES_PASSWORD
-              value: brucewayne123
-            - name: POSTGRES_USER
+          env:                                #Better practice: Using a ConfigMap to store environment variable
+            - name: POSTGRES_USER             #Specifying the Database user. Default: postgres
               value: theTaskMaster332
-            - name: PGDATA
-              value: /data/pgdata
+            - name: PGDATA                    #When postgres starts it needs to know the location of the data area.
+              value: /data/pgdata             #The location must be specified by the PGDATA environment variable; there is no default.
   # Volume Claim
   volumeClaimTemplates:
     - metadata:
@@ -41,7 +39,7 @@ spec:
 ---
 
 
-# PostgreSQL StatefulSet Service
+# Service to access the psql Statefulset
 apiVersion: v1
 kind: Service
 metadata:
@@ -53,3 +51,5 @@ spec:
   ports:
     - port: 5432
       targetPort: 5432
+
+

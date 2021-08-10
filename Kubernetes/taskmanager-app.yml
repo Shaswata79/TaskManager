@@ -18,7 +18,7 @@ spec:
         imagePullPolicy: Always
         env:
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://taskmanager-data-svc:5432/
+              value: jdbc:postgresql://taskmanager-data-svc:5432/     #The hostname (taskmanager-data-svc) is the name of the service that is used to access the PostgreSQL Statefulset
             - name: POSTGRES_USER
               value: theTaskMaster332
             - name: POSTGRES_PASSWORD
